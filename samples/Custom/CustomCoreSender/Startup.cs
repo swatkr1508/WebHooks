@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +20,7 @@ namespace CustomCoreSender
         {
             services.AddMvc()
                 .AddWebHooksApi()
-                .AddWebHooksWithSqlStorage("Server=52.165.133.243;Database=webhooks;User Id=sa; Password=W3lc0m!0;");
+                .AddWebHooksWithSqlStorage("Server=51.144.114.214;Database=webhooks;User Id=sa; Password=W3lc0m!0;");
 
             services.AddAuthentication(CustomDefaults.AuthenticationScheme)
                 .AddCustom();
