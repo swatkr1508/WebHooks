@@ -100,6 +100,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrelloCoreReceiver", "sampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebHooks.FunctionalTest", "test\Microsoft.AspNetCore.WebHooks.FunctionalTest\Microsoft.AspNetCore.WebHooks.FunctionalTest.csproj", "{F42E56B7-60D4-481A-8585-04015B2B501E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Custom", "Custom", "{7EC96370-C557-42D3-8BF5-7D02432E4EA1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebHooks.Common", "src\custom\Microsoft.AspNetCore.WebHooks.Common\Microsoft.AspNetCore.WebHooks.Common.csproj", "{6823C358-F2A6-42E7-9413-1A6D18D7E226}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebHooks.Custom", "src\custom\Microsoft.AspNetCore.WebHooks.Custom\Microsoft.AspNetCore.WebHooks.Custom.csproj", "{7E85DB7E-ED48-4294-8D36-9A9CB6ECFB92}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebHooks.Custom.Api", "src\custom\Microsoft.AspNetCore.WebHooks.Custom.Api\Microsoft.AspNetCore.WebHooks.Custom.Api.csproj", "{9A096154-AE9B-40C1-9CA2-33B09DB585BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebHooks.Custom.SqlStorage", "src\custom\Microsoft.AspNetCore.WebHooks.Custom.SqlStorage\Microsoft.AspNetCore.WebHooks.Custom.SqlStorage.csproj", "{E16FA208-4CD1-4705-8CC8-1E3FDC62C6B7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomCoreReceiver", "samples\Custom\CustomCoreReceiver\CustomCoreReceiver.csproj", "{24B363D8-3F54-432E-8929-EA0552CE4FE3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomCoreSender", "samples\Custom\CustomCoreSender\CustomCoreSender.csproj", "{E53781B8-E9CA-46DA-8C4C-3608E40392FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -250,6 +264,30 @@ Global
 		{F42E56B7-60D4-481A-8585-04015B2B501E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F42E56B7-60D4-481A-8585-04015B2B501E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F42E56B7-60D4-481A-8585-04015B2B501E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6823C358-F2A6-42E7-9413-1A6D18D7E226}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6823C358-F2A6-42E7-9413-1A6D18D7E226}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6823C358-F2A6-42E7-9413-1A6D18D7E226}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6823C358-F2A6-42E7-9413-1A6D18D7E226}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E85DB7E-ED48-4294-8D36-9A9CB6ECFB92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E85DB7E-ED48-4294-8D36-9A9CB6ECFB92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E85DB7E-ED48-4294-8D36-9A9CB6ECFB92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E85DB7E-ED48-4294-8D36-9A9CB6ECFB92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A096154-AE9B-40C1-9CA2-33B09DB585BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A096154-AE9B-40C1-9CA2-33B09DB585BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A096154-AE9B-40C1-9CA2-33B09DB585BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A096154-AE9B-40C1-9CA2-33B09DB585BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E16FA208-4CD1-4705-8CC8-1E3FDC62C6B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E16FA208-4CD1-4705-8CC8-1E3FDC62C6B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E16FA208-4CD1-4705-8CC8-1E3FDC62C6B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E16FA208-4CD1-4705-8CC8-1E3FDC62C6B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24B363D8-3F54-432E-8929-EA0552CE4FE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24B363D8-3F54-432E-8929-EA0552CE4FE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24B363D8-3F54-432E-8929-EA0552CE4FE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24B363D8-3F54-432E-8929-EA0552CE4FE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E53781B8-E9CA-46DA-8C4C-3608E40392FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E53781B8-E9CA-46DA-8C4C-3608E40392FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E53781B8-E9CA-46DA-8C4C-3608E40392FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E53781B8-E9CA-46DA-8C4C-3608E40392FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -291,9 +329,15 @@ Global
 		{91E02D64-BA6E-473C-A250-D1051A50DDAB} = {9575CB90-BC4B-43BB-8AEA-82C53FDA4187}
 		{E9E37253-3FE1-44A4-A9E7-A2B6C54EECFE} = {E957C8D9-B4A0-488B-838F-BAB4DE080A76}
 		{F42E56B7-60D4-481A-8585-04015B2B501E} = {9575CB90-BC4B-43BB-8AEA-82C53FDA4187}
+		{6823C358-F2A6-42E7-9413-1A6D18D7E226} = {7EC96370-C557-42D3-8BF5-7D02432E4EA1}
+		{7E85DB7E-ED48-4294-8D36-9A9CB6ECFB92} = {7EC96370-C557-42D3-8BF5-7D02432E4EA1}
+		{9A096154-AE9B-40C1-9CA2-33B09DB585BE} = {7EC96370-C557-42D3-8BF5-7D02432E4EA1}
+		{E16FA208-4CD1-4705-8CC8-1E3FDC62C6B7} = {7EC96370-C557-42D3-8BF5-7D02432E4EA1}
+		{24B363D8-3F54-432E-8929-EA0552CE4FE3} = {7EC96370-C557-42D3-8BF5-7D02432E4EA1}
+		{E53781B8-E9CA-46DA-8C4C-3608E40392FA} = {7EC96370-C557-42D3-8BF5-7D02432E4EA1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {12CE6238-F847-4984-8622-1ED46072150A}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 EndGlobal
