@@ -3,8 +3,6 @@
 
 using System;
 using System.ComponentModel;
-using Microsoft.AspNetCore.WebHooks.Internal;
-using P112.WebHooks.Internals;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -19,7 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder" /> to configure.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static IMvcCoreBuilder AddSlackWebHooks(this IMvcCoreBuilder builder)
+        public static IMvcCoreBuilder AddPandoraWebHooks(this IMvcCoreBuilder builder)
         {
             if (builder == null)
             {

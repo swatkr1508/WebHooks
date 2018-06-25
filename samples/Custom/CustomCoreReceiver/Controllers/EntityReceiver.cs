@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,10 +9,10 @@ using P112.WebHooks.Pandora;
 
 namespace CustomCoreReceiver.Controllers
 {
-    public class EntityReceiver : Controller
+    public class EntityReceiver : ControllerBase
     {
-        [PandoraWebHook(EventName = "LedgersCreated")]
-        public IActionResult TextEntitiesChange(string action, JObject data)
+        [PandoraWebHook()]
+        public IActionResult TextEntitiesChange(string id, JObject data)
         {
 
             return Ok();

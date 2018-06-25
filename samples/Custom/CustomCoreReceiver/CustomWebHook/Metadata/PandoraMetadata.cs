@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.WebHooks.Metadata;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.AspNetCore.WebHooks.Metadata;
+using P112.WebHooks.Filters;
 
 namespace P112.WebHooks.Metadata
 {
@@ -9,31 +7,42 @@ namespace P112.WebHooks.Metadata
     /// <summary>
     /// An <see cref="IWebHookMetadata"/> service containing metadata about the PandoraMetadata receiver.
     /// </summary>
-    public class PandoraMetadata : WebHookMetadata, IWebHookPingRequestMetadata,
-        IWebHookGetRequestMetadata, IWebHookEventFromBodyMetadata, IWebHookBodyTypeMetadataService
+    public class PandoraMetadata :
+        WebHookMetadata,
+        IWebHookEventMetadata,
+        IWebHookFilterMetadata,
+        IWebHookGetHeadRequestMetadata
     {
+        private readonly PandoraVerifySignatureFilter _verifySignatureFilter;
+
         /// <summary>
         /// Instantiates a new <see cref="PandoraMetadata"/> instance.
         /// </summary>
-        public PandoraMetadata()
+        public PandoraMetadata(PandoraVerifySignatureFilter verifySignatureFilter)
             : base(PandoraConstants.ReceiverName)
         {
+            _verifySignatureFilter = verifySignatureFilter;
         }
 
-        // IWebHookBodyTypeMetadataService...
-        public string PingEventName => PandoraConstants.ReceiverName;
+        public override WebHookBodyType BodyType => WebHookBodyType.Json;
 
-        public string ChallengeQueryParameterName => null;
+        public string ConstantValue => PandoraConstants.ReceiverName;
 
-        public int SecretKeyMinLength => throw new NotImplementedException();
+        public string HeaderName => null;
 
-        public int SecretKeyMaxLength => throw new NotImplementedException();
+        public string QueryParameterName => null;
 
-        public bool AllowMissing => true;
+        public bool AllowHeadRequests => false;
 
-        public string BodyPropertyPath => "Action";
+        public string ChallengeQueryParameterName => PandoraConstants.Challenge;
 
-        public WebHookBodyType BodyType => WebHookBodyType.Json;
+        public int SecretKeyMinLength => 0;
+
+
+        public void AddFilters(WebHookFilterMetadataContext context)
+        {
+            context.Results.Add(_verifySignatureFilter);
+        }
     }
 
 
