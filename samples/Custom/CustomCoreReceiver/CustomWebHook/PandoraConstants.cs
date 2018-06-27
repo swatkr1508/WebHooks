@@ -4,6 +4,8 @@ namespace P112.WebHooks
     {
         public static string ReceiverName => "pandora";
 
+        public static string EventName = "Action";
+
         public static string Challenge = "echo";
     }
 }

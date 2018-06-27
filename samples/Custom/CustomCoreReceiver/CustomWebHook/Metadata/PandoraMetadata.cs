@@ -26,7 +26,7 @@ namespace P112.WebHooks.Metadata
 
         public override WebHookBodyType BodyType => WebHookBodyType.Json;
 
-        public string ConstantValue => PandoraConstants.ReceiverName;
+        public string ConstantValue => null;
 
         public string HeaderName => null;
 
