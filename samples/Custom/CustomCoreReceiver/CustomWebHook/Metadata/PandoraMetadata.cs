@@ -9,7 +9,6 @@ namespace P112.WebHooks.Metadata
     /// </summary>
     public class PandoraMetadata :
         WebHookMetadata,
-        IWebHookEventMetadata,
         IWebHookFilterMetadata,
         IWebHookGetHeadRequestMetadata
     {
@@ -25,13 +24,7 @@ namespace P112.WebHooks.Metadata
         }
 
         public override WebHookBodyType BodyType => WebHookBodyType.Json;
-
-        public string ConstantValue => null;
-
-        public string HeaderName => null;
-
-        public string QueryParameterName => null;
-
+        
         public bool AllowHeadRequests => false;
 
         public string ChallengeQueryParameterName => PandoraConstants.Challenge;
