@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.WebHooks
             catch (Exception ex)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_WebHookFailure, workItem.Offset, workItem.WebHook.Id, ex.Message);
-                Logger.LogError(message, ex);
+                Logger.LogInformation(message, ex);
             }
 
             try
@@ -251,14 +251,14 @@ namespace Microsoft.AspNetCore.WebHooks
                 else
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_GivingUp, workItem.WebHook.Id, workItem.Offset);
-                    Logger.LogError(message);
+                    Logger.LogInformation(message);
                     await OnWebHookFailure(workItem);
                 }
             }
             catch (Exception ex)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_WebHookFailure, workItem.Offset, workItem.WebHook.Id, ex.Message);
-                Logger.LogError(message, ex);
+                Logger.LogInformation(message, ex);
             }
         }
     }

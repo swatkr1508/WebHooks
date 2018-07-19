@@ -223,14 +223,14 @@ namespace Microsoft.AspNetCore.WebHooks
             catch (Exception ex)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_VerifyFailure, ex.Message);
-                _logger.LogError(message, ex);
+                _logger.LogInformation(message, ex);
                 throw new InvalidOperationException(message);
             }
 
             if (!response.IsSuccessStatusCode)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_VerifyFailure, response.StatusCode);
-                _logger.LogError(message);
+                _logger.LogInformation(message);
                 throw new InvalidOperationException(message);
             }
 
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.WebHooks
             if (response.Content == null)
             {
                 var message = CustomResources.Manager_VerifyNoBody;
-                _logger.LogError(message);
+                _logger.LogInformation(message);
                 throw new InvalidOperationException(message);
             }
 
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.WebHooks
             if (!string.Equals(actualEcho, echo, StringComparison.Ordinal))
             {
                 var message = CustomResources.Manager_VerifyBadEcho;
-                _logger.LogError(message);
+                _logger.LogInformation(message);
                 throw new InvalidOperationException(message);
             }
         }
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.WebHooks
             if (!(webHookUri.IsHttp() || webHookUri.IsHttps()))
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_NoHttpUri, webHookUri);
-                _logger.LogError(message);
+                _logger.LogInformation(message);
                 throw new InvalidOperationException(message);
             }
         }
