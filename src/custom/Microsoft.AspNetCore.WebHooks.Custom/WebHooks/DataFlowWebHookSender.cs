@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.WebHooks
 {
@@ -35,40 +36,19 @@ namespace Microsoft.AspNetCore.WebHooks
         /// Initializes a new instance of the <see cref="DataflowWebHookSender"/> class with a default retry policy.
         /// </summary>
         /// <param name="logger">The current <see cref="ILogger"/>.</param>
-        public DataflowWebHookSender(ILogger<DataflowWebHookSender> logger)
-            : this(logger, retryDelays: null, options: null, httpClient: null)
+        /// <param name="settings">The current <see cref="WebHookSettings"/>.</param>
+        public DataflowWebHookSender(ILogger<DataflowWebHookSender> logger, IOptions<WebHookSettings> settings)
+            : this(logger, retryDelays: null, options: null, httpClient: null, settings:settings)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DataflowWebHookSender"/> class with a given collection of <paramref name="retryDelays"/> and
-        /// <paramref name="options"/> for how to manage the queuing policy for each transmission. The transmission model is as follows: each try
-        /// and subsequent retries is managed by a separate <see cref="ActionBlock{T}"/> which controls the level of concurrency used to
-        /// send out WebHooks. The <paramref name="options"/> parameter can be used to control all <see cref="ActionBlock{T}"/> instances
-        /// by setting the maximum level of concurrency, length of queue, and more.
-        /// </summary>
-        /// <param name="logger">The current <see cref="ILogger"/>.</param>
-        /// <param name="retryDelays">A collection of <see cref="TimeSpan"/> instances indicating the delay between each retry. If <c>null</c>,
-        /// then a default retry policy is used of one retry after one 1 minute and then again after 4 minutes. A retry is attempted if the
-        /// delivery fails or does not result in a 2xx HTTP status code. If the status code is 410 then no retry is attempted. If the collection
-        /// is empty then no retries are attempted.</param>
-        /// <param name="options">An <see cref="ExecutionDataflowBlockOptions"/> used to control the <see cref="ActionBlock{T}"/> instances.
-        /// The default setting uses a maximum of 8 concurrent transmitters for each try or retry.</param>
-        internal DataflowWebHookSender(ILogger<DataflowWebHookSender> logger, IEnumerable<TimeSpan> retryDelays, ExecutionDataflowBlockOptions options)
-            : this(logger, retryDelays, options, httpClient: null)
-        {
-        }
 
         /// <summary>
         /// Initialize a new instance of the <see cref="DataflowWebHookSender"/> with the given retry policy, <paramref name="options"/>,
         /// and <paramref name="httpClient"/>. This constructor is intended for unit testing purposes.
         /// </summary>
-        internal DataflowWebHookSender(
-            ILogger<DataflowWebHookSender> logger,
-            IEnumerable<TimeSpan> retryDelays,
-            ExecutionDataflowBlockOptions options,
-            HttpClient httpClient)
-            : base(logger)
+        internal DataflowWebHookSender(ILogger<DataflowWebHookSender> logger, IEnumerable<TimeSpan> retryDelays, ExecutionDataflowBlockOptions options, HttpClient httpClient, IOptions<WebHookSettings> settings)
+            : base(logger, settings)
         {
             retryDelays = retryDelays ?? DefaultRetries;
 

@@ -1,17 +1,21 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.WebHooks
 {
@@ -31,19 +35,16 @@ namespace Microsoft.AspNetCore.WebHooks
         private const string BodyNotificationsKey = "Notifications";
 
         private readonly ILogger _logger;
-
+        private readonly WebHookSettings _settings;
         private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHookSender"/> class.
         /// </summary>
-        protected WebHookSender(ILogger<WebHookSender> logger)
+        protected WebHookSender(ILogger<WebHookSender> logger, IOptions<WebHookSettings> settings)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _settings = settings.Value;
         }
 
         /// <summary>
@@ -130,24 +131,22 @@ namespace Microsoft.AspNetCore.WebHooks
                 throw new ArgumentNullException(nameof(workItem));
             }
 
-            var body = new Dictionary<string, object>
+            // Set notifications
+            var webhookBody = new WebhookBody
             {
-                // Set properties from work item
-                [BodyIdKey] = workItem.Id,
-                [BodyAttemptKey] = workItem.Offset + 1
+                Id = workItem.Id,
+                Attempt = workItem.Offset + 1,
             };
-
-            // Set properties from WebHook
             var properties = workItem.WebHook.Properties;
             if (properties != null)
             {
-                body[BodyPropertiesKey] = new Dictionary<string, object>(properties);
+                webhookBody.Properties = new Dictionary<string, object>(properties);
             }
+            webhookBody.Notifications = workItem.Notifications.ToArray();
 
-            // Set notifications
-            body[BodyNotificationsKey] = workItem.Notifications;
-
-            return JObject.FromObject(body);
+            var serializer = _settings.Settings != null ? JsonSerializer.Create(_settings.Settings) : JsonSerializer.CreateDefault();
+            serializer.Converters.Add(new NotificationDictionarySerializer());
+            return JObject.FromObject(webhookBody, serializer);
         }
 
         /// <summary>
@@ -189,5 +188,40 @@ namespace Microsoft.AspNetCore.WebHooks
                 request.Headers.Add(SignatureHeaderName, headerValue);
             }
         }
+    }
+
+    internal class NotificationDictionarySerializer : JsonConverter
+    {
+        public override bool CanWrite => true;
+
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(NotificationDictionary);
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            NotificationDictionary dictionary = (NotificationDictionary)value;
+            writer.WriteStartObject();
+            foreach (var key in dictionary)
+            {
+                writer.WritePropertyName(key.Key); 
+                serializer.Serialize(writer, key.Value);
+            }
+            writer.WriteEndObject();
+        }
+    }
+
+    internal struct WebhookBody
+    {
+        public string Id { get; set; }
+        public int Attempt { get; set; }
+        public Dictionary<string, object> Properties { get; set; }
+        public NotificationDictionary[] Notifications { get; set; }
     }
 }

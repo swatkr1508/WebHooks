@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.WebHooks.Internal
@@ -14,8 +15,10 @@ namespace Microsoft.AspNetCore.WebHooks.Internal
         /// </summary>
         /// <param name="services"></param>
         /// <param name="connectionString"></param>
-        public static void AddWebHookServices(IServiceCollection services, string connectionString)
+        /// <param name="configureOptions"></param>
+        public static void AddWebHookServices(IServiceCollection services, string connectionString, Action<WebHookSettings> configureOptions)
         {
+            services.Configure<WebHookSettings>(configureOptions);
             services.AddDbContext<WebHookStoreContext>(options =>
             {
                 options.UseSqlServer(connectionString);

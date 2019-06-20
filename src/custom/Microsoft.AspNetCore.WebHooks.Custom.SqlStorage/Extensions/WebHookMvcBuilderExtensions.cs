@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.ComponentModel;
+using Microsoft.AspNetCore.WebHooks;
 using Microsoft.AspNetCore.WebHooks.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -15,15 +16,16 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="builder">The <see cref="IMvcBuilder" /> to configure.</param>
         /// <param name="connectionString">The connection string that is used.</param>
+        /// <param name="configureOptions">The connection string that is used.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static IMvcBuilder AddWebHooksWithSqlStorage(this IMvcBuilder builder, string connectionString)
+        public static IMvcBuilder AddWebHooksWithSqlStorage(this IMvcBuilder builder, string connectionString, Action<WebHookSettings> configureOptions)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            WebHookServiceCollectionSetup.AddWebHookServices(builder.Services, connectionString);
+            WebHookServiceCollectionSetup.AddWebHookServices(builder.Services, connectionString, configureOptions);
             return builder;
         }
     }

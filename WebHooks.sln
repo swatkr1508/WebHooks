@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27110.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29006.145
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{929F44D0-A040-4DC3-A22F-4C5829C05D44}"
 	ProjectSection(SolutionItems) = preProject
@@ -20,13 +20,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.targets = Directory.Build.targets
 		LICENSE = LICENSE
 		README.md = README.md
-		version.xml = version.xml
+		version.props = version.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{E957C8D9-B4A0-488B-838F-BAB4DE080A76}"
 	ProjectSection(SolutionItems) = preProject
 		samples\Directory.Build.props = samples\Directory.Build.props
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Custom", "Custom", "{7EC96370-C557-42D3-8BF5-7D02432E4EA1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebHooks.Receivers", "src\Microsoft.AspNetCore.WebHooks.Receivers\Microsoft.AspNetCore.WebHooks.Receivers.csproj", "{657D9111-1AAD-439A-B7B3-261EDB7BFBE4}"
 EndProject
@@ -99,8 +101,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrelloCoreReceiver", "samples\TrelloCoreReceiver\TrelloCoreReceiver.csproj", "{E9E37253-3FE1-44A4-A9E7-A2B6C54EECFE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebHooks.FunctionalTest", "test\Microsoft.AspNetCore.WebHooks.FunctionalTest\Microsoft.AspNetCore.WebHooks.FunctionalTest.csproj", "{F42E56B7-60D4-481A-8585-04015B2B501E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Custom", "Custom", "{7EC96370-C557-42D3-8BF5-7D02432E4EA1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebHooks.Common", "src\custom\Microsoft.AspNetCore.WebHooks.Common\Microsoft.AspNetCore.WebHooks.Common.csproj", "{6823C358-F2A6-42E7-9413-1A6D18D7E226}"
 EndProject

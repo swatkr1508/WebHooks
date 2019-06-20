@@ -20,7 +20,13 @@ namespace CustomCoreSender
         {
             services.AddMvc()
                 .AddWebHooksApi()
-                .AddWebHooksWithSqlStorage("Server=51.144.114.214;Database=webhooks;User Id=sa; Password=W3lc0m!0;");
+                .AddWebHooksWithSqlStorage("Server=(localdb)\\ProjectsV13;Database=webhooks;Integrated Security=true;", x =>
+                {
+                    x.Settings = new JsonSerializerSettings
+                    {
+                        TypeNameHandling = TypeNameHandling.Auto
+                    };
+                });
 
             services.AddAuthentication(CustomDefaults.AuthenticationScheme)
                 .AddCustom();
