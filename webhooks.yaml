@@ -1,0 +1,71 @@
+name: $(BuildId)
+trigger:
+- master
+pr:
+  branches:
+    include:
+    - "*"
+jobs:
+
+################################################################################
+- job: Linux
+################################################################################
+  pool:
+    vmImage: ubuntu-16.04
+  variables:
+    BuildConfiguration: "Release"
+    Version: "1.0.$(Build.BuildId)"
+
+  steps:
+
+  # Update .Net Core SDK
+  - task: DotNetCoreInstaller@0
+    displayName: 'Use .NET Core sdk 2.2.401'
+    inputs:
+      version: 2.2.401
+
+  # Dot Net Build
+  - task: DotNetCoreCLI@2
+    displayName: DotNetCoreCLI - Build Solution
+    inputs:
+      command: "build"
+      projects: "WebHooks.sln"
+      arguments: "--configuration $(BuildConfiguration)"
+  
+  # Dot Net Test
+  - task: DotNetCoreCLI@2
+    displayName: DotNetCoreCLI - Run Tests
+    inputs:
+      command: "test"
+      projects: |
+       **/*.Tests.csproj
+      arguments: "--configuration $(BuildConfiguration)"
+
+  # Dot Net Pack Packages
+  - task: DotNetCoreCLI@2
+    displayName: DotNetCoreCLI - Pack Packages Nuget
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    inputs:
+      command: "pack"
+      searchPatternPack: "src/**/*.csproj"
+      outputDir: "$(Build.ArtifactStagingDirectory)/Webhooks"
+      versioningScheme: "byEnvVar"
+      versionEnvVar: "Version"
+
+  # Dot Net Push Packages
+  - task: NuGetCommand@2
+    displayName: "NuGet Push Packages Nuget"
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    inputs:
+      command: push
+      packagesToPush: "$(Build.ArtifactStagingDirectory)/Webhooks/*.nupkg"
+      publishVstsFeed: '58b77094-01c2-4df7-a763-c7b793b222e3'
+
+  # Publish Files
+  - task: PublishBuildArtifacts@1
+    displayName: PublishBuildArtifacts - Publish Files 'drop'
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    inputs:
+      PathtoPublish: "$(build.artifactstagingdirectory)"
+      ArtifactName: "drop"
+      ArtifactType: "Container"
