@@ -14,7 +14,7 @@ jobs:
     vmImage: ubuntu-16.04
   variables:
     BuildConfiguration: "Release"
-    Version: "1.0.$(Build.BuildId)"
+    Version: "2.3.$(Build.BuildId)"
 
   steps:
 
