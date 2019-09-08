@@ -50,10 +50,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <summary>
         /// Gets the current <see cref="ILogger"/> instance.
         /// </summary>
-        protected ILogger Logger
-        {
-            get { return _logger; }
-        }
+        protected ILogger Logger => _logger;
 
         /// <inheritdoc />
         public abstract Task SendWebHookWorkItemsAsync(IEnumerable<WebHookWorkItem> workItems);

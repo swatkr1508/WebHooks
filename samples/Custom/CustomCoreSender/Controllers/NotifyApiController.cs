@@ -14,7 +14,7 @@ namespace CustomSender.Controllers
         public async Task<IActionResult> Get()
         {
             // Create an event with 'event2' and additional data
-            await this.NotifyAsync("event2", new { P1 = "p1", X = new List<Model> { new Model
+            await this.NotifyAllAsync("event2", new { P1 = "p1", X = new List<Model> { new Model
             {
                 A = new Model2 { B = "XX", C = "XXX" }
             } }
