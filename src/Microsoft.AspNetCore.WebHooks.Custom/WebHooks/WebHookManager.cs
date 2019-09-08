@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.WebHooks
             var workItems = GetWorkItems(webHooks, nots);
 
             // Start sending WebHooks
-            await _webHookSender.SendWebHookWorkItemsAsync(workItems);
+            _ = _webHookSender.SendWebHookWorkItemsAsync(workItems);
             return webHooks.Count;
         }
 
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.WebHooks
             var workItems = GetWorkItems(webHooks, nots);
 
             // Start sending WebHooks
-            await _webHookSender.SendWebHookWorkItemsAsync(workItems);
+            _ = _webHookSender.SendWebHookWorkItemsAsync(workItems);
             return webHooks.Count;
         }
 

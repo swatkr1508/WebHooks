@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.WebHooks
                 var policy = _policies.GetOrAdd(workitem.WebHook.WebHookUri.Host, CreatePolicy);
                 await policy.ExecuteAsync((CancellationToken cancellationToken) => LaunchWebHook(workitem, cancellationToken), CancellationToken.None);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await OnWebHookFailure(workitem);
             }
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.WebHooks
 
         private static AsyncPolicy CreatePolicy(string arg)
         {
-            var timeout = Policy.TimeoutAsync(TimeSpan.FromSeconds(100), Polly.Timeout.TimeoutStrategy.Optimistic);
+            var timeout = Policy.TimeoutAsync(TimeSpan.FromSeconds(10), Polly.Timeout.TimeoutStrategy.Optimistic);
 
             var waitAndRetryPolicy = Policy
                .Handle<Exception>(e => !(e is BrokenCircuitException)) // Exception filtering!  We don't retry if the inner circuit-breaker judges the underlying system is out of commission!
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.WebHooks
                    durationOfBreak: TimeSpan.FromSeconds(10)
                );
 
-            return Policy.WrapAsync(timeout, waitAndRetryPolicy, circuitBreakerPolicy);
+            return Policy.WrapAsync(waitAndRetryPolicy, circuitBreakerPolicy).WrapAsync(timeout);
         }
     }
 }

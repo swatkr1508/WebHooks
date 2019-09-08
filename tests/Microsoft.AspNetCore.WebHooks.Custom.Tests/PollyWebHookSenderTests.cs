@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -90,6 +91,26 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
             Assert.IsFalse(target.Success);
         }
 
+        [TestMethod]
+        public async Task SendWebhookWorkItem_Timeout_Test()
+        {
+            var logger = new DummyLogger<PollyWebHookSender>();
+            var httpClient = new HttpClient(new TimeoutWebhookHandler());
+            var target = new WebhookSenderProxy(httpClient, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
+
+            await target.SendWebHookWorkItemsAsync(new List<WebHookWorkItem>
+            {
+                new WebHookWorkItem(new WebHook { WebHookUri = new System.Uri("http://local"), Secret = Secret }, new List<NotificationDictionary>()
+                {
+                    new NotificationDictionary("test", new { Bla = "Test" }),
+                })
+            });
+
+            Assert.AreEqual(4, target.Attempts);
+            Assert.IsTrue(target.Failed);
+            Assert.IsFalse(target.Success);
+        }
+
 
         private class NormalWebhookHandler : HttpMessageHandler
         {
@@ -112,7 +133,7 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
         {
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                await Task.Delay(20);
+                await Task.Delay(TimeSpan.FromSeconds(20), cancellationToken);
                 return new HttpResponseMessage(HttpStatusCode.OK);
             }
         }

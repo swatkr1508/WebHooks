@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <AssemblyVersion Condition=" '$(BUILD_BUILDID)' == '' ">1.0.0.0</AssemblyVersion>
+    <FileVersion Condition=" '$(BUILD_BUILDID)' == '' ">1.0.0.0</FileVersion>
+    <Version Condition=" '$(BUILD_BUILDID)' == '' ">2.2.3</Version>
+
+    <AssemblyVersion Condition=" '$(BUILD_BUILDID)' != '' ">2.2.0.$(BUILD_BUILDID)</AssemblyVersion>
+    <FileVersion Condition=" '$(BUILD_BUILDID)' != '' ">2.2.0.$(BUILD_BUILDID)</FileVersion>
+    <Version Condition=" '$(BUILD_BUILDID)' != '' ">2.2.$(BUILD_BUILDID)</Version>
+
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>
