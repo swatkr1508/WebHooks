@@ -24,7 +24,7 @@ namespace P112.WebHooks.Metadata
         }
 
         public override WebHookBodyType BodyType => WebHookBodyType.Json;
-        
+
         public bool AllowHeadRequests => false;
 
         public string ChallengeQueryParameterName => PandoraConstants.Challenge;

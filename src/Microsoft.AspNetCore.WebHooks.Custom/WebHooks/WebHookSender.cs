@@ -15,7 +15,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.WebHooks
 {
@@ -161,7 +160,7 @@ namespace Microsoft.AspNetCore.WebHooks
             }
             if (workItem.WebHook == null)
             {
-                var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Sender_BadWorkItem, this.GetType().Name, "WebHook");
+                var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Sender_BadWorkItem, GetType().Name, "WebHook");
                 throw new ArgumentException(message, "workItem");
             }
             if (request == null)
@@ -207,7 +206,7 @@ namespace Microsoft.AspNetCore.WebHooks
             writer.WriteStartObject();
             foreach (var key in dictionary)
             {
-                writer.WritePropertyName(key.Key); 
+                writer.WritePropertyName(key.Key);
                 serializer.Serialize(writer, key.Value);
             }
             writer.WriteEndObject();

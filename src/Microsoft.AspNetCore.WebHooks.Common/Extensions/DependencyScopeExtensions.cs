@@ -1,12 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Microsoft.AspNetCore.WebHooks.Config;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.WebHooks
 {
@@ -16,17 +14,6 @@ namespace Microsoft.AspNetCore.WebHooks
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class DependencyScopeExtensions
     {
-        /// <summary>
-        /// Gets an <see cref="ILogger"/> implementation registered with the Dependency Injection engine
-        /// or a default <see cref="System.Diagnostics.Trace"/> implementation if none are registered.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceProvider"/> implementation.</param>
-        /// <returns>The registered <see cref="ILogger"/> instance or a default implementation if none are registered.</returns>
-        public static ILogger<TType> GetLogger<TType>(this IServiceProvider services)
-        {
-            return services.GetService<ILogger<TType>>();
-        }
-
         /// <summary>
         /// Gets the <typeparamref name="TService"/> instance registered with the Dependency Injection engine or
         /// null if none are registered.

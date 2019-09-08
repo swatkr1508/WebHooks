@@ -1,15 +1,12 @@
 using System;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebHooks.Filters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Microsoft.AspNetCore.Routing;
 
 namespace P112.WebHooks.Filters
 {

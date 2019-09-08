@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebHooks;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Swagger;
@@ -35,7 +29,7 @@ namespace CustomCoreSender
             {
                 c.SwaggerDoc("v1", new Info { Title = "CoreSender", Version = "v1" });
             });
-          
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,7 +43,7 @@ namespace CustomCoreSender
             app.UseStaticFiles();
 
             app.UseAuthentication();
-            
+
             app.UseMvc();
             app.UseWebHooks();
 

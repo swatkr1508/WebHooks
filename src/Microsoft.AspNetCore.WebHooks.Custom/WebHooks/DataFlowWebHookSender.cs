@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <param name="logger">The current <see cref="ILogger"/>.</param>
         /// <param name="settings">The current <see cref="WebHookSettings"/>.</param>
         public DataflowWebHookSender(ILogger<DataflowWebHookSender> logger, IOptions<WebHookSettings> settings)
-            : this(logger, retryDelays: null, options: null, httpClient: null, settings:settings)
+            : this(logger, retryDelays: null, options: null, httpClient: null, settings: settings)
         {
         }
 

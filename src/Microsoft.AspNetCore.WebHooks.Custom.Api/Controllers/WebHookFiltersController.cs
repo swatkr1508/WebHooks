@@ -3,10 +3,9 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Web.Http;
-using Microsoft.AspNetCore.WebHooks.Routes;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebHooks.Routes;
 
 namespace Microsoft.AspNetCore.WebHooks.Controllers
 {

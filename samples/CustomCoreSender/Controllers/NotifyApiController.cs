@@ -1,8 +1,8 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Web.Http;
-using System.Collections.Generic;
 
 namespace CustomSender.Controllers
 {
@@ -14,7 +14,10 @@ namespace CustomSender.Controllers
         public async Task<IActionResult> Get()
         {
             // Create an event with 'event2' and additional data
-            await this.NotifyAllAsync("event2", new { P1 = "p1", X = new List<Model> { new Model
+            await this.NotifyAllAsync("event2", new
+            {
+                P1 = "p1",
+                X = new List<Model> { new Model
             {
                 A = new Model2 { B = "XX", C = "XXX" }
             } }
@@ -35,7 +38,7 @@ namespace CustomSender.Controllers
 
     }
 
-    public class Model2: ModelBase
+    public class Model2 : ModelBase
     {
         public string C { get; set; }
     }

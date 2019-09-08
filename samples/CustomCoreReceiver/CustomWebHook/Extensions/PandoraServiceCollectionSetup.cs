@@ -1,9 +1,6 @@
 using System;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.WebHooks.Filters;
 using Microsoft.AspNetCore.WebHooks.Metadata;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using P112.WebHooks.Filters;
 using P112.WebHooks.Metadata;
 

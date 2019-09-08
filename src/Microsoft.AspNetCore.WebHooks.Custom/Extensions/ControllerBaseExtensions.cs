@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -163,7 +163,7 @@ namespace System.Web.Http
             }
 
             // Send a notification to registered WebHooks across all users with matching filters
-            IWebHookManager manager = controller.HttpContext.RequestServices.GetManager();
+            var manager = controller.HttpContext.RequestServices.GetManager();
             return await manager.NotifyAllAsync(notifications, predicate);
         }
     }

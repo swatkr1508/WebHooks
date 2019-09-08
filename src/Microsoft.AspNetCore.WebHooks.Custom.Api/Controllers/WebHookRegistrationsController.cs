@@ -5,12 +5,11 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebHooks.Filters;
 using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.AspNetCore.WebHooks.Routes;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.WebHooks.Controllers
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
     [Route("api/webhooks/registrations")]
     public class WebHookRegistrationsController : ControllerBase
     {
-        private IWebHookRegistrationsManager _registrationsManager;
+        private readonly IWebHookRegistrationsManager _registrationsManager;
         private readonly ILogger _logger;
 
         /// <summary>
