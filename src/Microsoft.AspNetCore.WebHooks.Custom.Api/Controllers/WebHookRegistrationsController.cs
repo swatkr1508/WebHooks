@@ -114,7 +114,8 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
                 var result = await _registrationsManager.AddWebHookAsync(User, webHook, AddPrivateFilters);
                 if (result == StoreResult.Success)
                 {
-                    return CreatedAtRoute(WebHookRouteNames.RegistrationLookupAction, new { id = webHook.Id }, webHook);
+                    var r = await _registrationsManager.LookupWebHookAsync(User, webHook.Id, RemovePrivateFilters);
+                    return CreatedAtAction(nameof(Lookup), new { id = webHook.Id }, r);
                 }
                 return CreateHttpResult(result);
             }
