@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.SqlStorage.Internal
             {
                 options.UseSqlServer(connectionString);
             });
+
+            services.AddScoped<IWebHookStore, SqlWebHookStore>();
         }
     }
 }

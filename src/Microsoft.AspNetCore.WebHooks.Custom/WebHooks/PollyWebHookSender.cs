@@ -174,11 +174,14 @@ namespace Microsoft.AspNetCore.WebHooks
         {
             await OnWebHookAttempt(workItem);
 
+            workItem.Offset++;
+
             var request = CreateWebHookRequest(workItem);
             var response = await _httpClient.SendAsync(request, cancellationToken);
 
             var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_Result, workItem.WebHook.Id, response.StatusCode, workItem.Offset);
             Logger.LogInformation(message);
+
 
             if (response.IsSuccessStatusCode)
             {
