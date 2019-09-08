@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.AspNetCore.WebHooks.Custom.Properties;
 using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

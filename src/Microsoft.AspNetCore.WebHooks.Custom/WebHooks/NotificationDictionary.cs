@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Serialization;
+using Microsoft.AspNetCore.WebHooks.Custom.Properties;
 using Microsoft.AspNetCore.WebHooks.Properties;
 
 namespace Microsoft.AspNetCore.WebHooks

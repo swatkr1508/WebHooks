@@ -2,17 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.AspNetCore.WebHooks.Custom.Properties;
 using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly;
+using Polly.CircuitBreaker;
+using Polly.Wrap;
 
 namespace Microsoft.AspNetCore.WebHooks
 {
@@ -23,12 +29,8 @@ namespace Microsoft.AspNetCore.WebHooks
     /// </summary>
     public class PollyWebHookSender : WebHookSender
     {
-        private const int DefaultMaxConcurrencyLevel = 8;
-
-        private static readonly Collection<TimeSpan> DefaultRetries = new Collection<TimeSpan> { TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(4) };
-
         private readonly HttpClient _httpClient;
-        private readonly ActionBlock<WebHookWorkItem>[] _launchers;
+        private readonly ConcurrentDictionary<string, AsyncPolicy> _policies;
 
         private bool _disposed;
 
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <param name="logger">The current <see cref="ILogger"/>.</param>
         /// <param name="settings">The current <see cref="WebHookSettings"/>.</param>
         public PollyWebHookSender(ILogger<PollyWebHookSender> logger, IOptions<WebHookSettings> settings)
-            : this(logger, retryDelays: null, options: null, httpClient: null, settings: settings)
+            : this(httpClient: null, logger: logger, settings: settings)
         {
         }
 
@@ -47,30 +49,11 @@ namespace Microsoft.AspNetCore.WebHooks
         /// Initialize a new instance of the <see cref="DataflowWebHookSender"/> with the given retry policy, <paramref name="options"/>,
         /// and <paramref name="httpClient"/>. This constructor is intended for unit testing purposes.
         /// </summary>
-        internal PollyWebHookSender(ILogger<PollyWebHookSender> logger, IEnumerable<TimeSpan> retryDelays, ExecutionDataflowBlockOptions options, HttpClient httpClient, IOptions<WebHookSettings> settings)
+        internal PollyWebHookSender(HttpClient httpClient, ILogger<PollyWebHookSender> logger, IOptions<WebHookSettings> settings)
             : base(logger, settings)
         {
-            retryDelays = retryDelays ?? DefaultRetries;
-
-            options = options ?? new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = DefaultMaxConcurrencyLevel
-            };
-
             _httpClient = httpClient ?? new HttpClient();
-
-            // Create the launch processors with the given retry delays
-            _launchers = new ActionBlock<WebHookWorkItem>[1 + retryDelays.Count()];
-
-            var offset = 0;
-            _launchers[offset++] = new ActionBlock<WebHookWorkItem>(async item => await LaunchWebHook(item), options);
-            foreach (var delay in retryDelays)
-            {
-                _launchers[offset++] = new ActionBlock<WebHookWorkItem>(async item => await DelayedLaunchWebHook(item, delay), options);
-            }
-
-            var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_Started, typeof(DataflowWebHookSender).Name, _launchers.Length);
-            Logger.LogInformation(message);
+            _policies = new ConcurrentDictionary<string, AsyncPolicy>();
         }
 
         /// <inheritdoc />
@@ -81,12 +64,14 @@ namespace Microsoft.AspNetCore.WebHooks
                 throw new ArgumentNullException(nameof(workItems));
             }
 
-            foreach (var workItem in workItems)
+            var tasklist = new Task[workItems.Count()];
+            var index = 0;
+            foreach (var workitem in workItems)
             {
-                _launchers[0].Post(workItem);
+                tasklist[index++] = SendWithPolly(workitem);
             }
 
-            return Task.FromResult(true);
+            return Task.WhenAll(tasklist);
         }
 
         /// <summary>
@@ -100,39 +85,29 @@ namespace Microsoft.AspNetCore.WebHooks
                 _disposed = true;
                 if (disposing)
                 {
-                    if (_launchers != null)
+                    try
                     {
-                        try
+                        // Cancel any outstanding HTTP requests
+                        if (_httpClient != null)
                         {
-                            // Start shutting down launchers
-                            var completionTasks = new Task[_launchers.Length];
-                            for (var i = 0; i < _launchers.Length; i++)
-                            {
-                                var launcher = _launchers[i];
-                                launcher.Complete();
-                                completionTasks[i] = launcher.Completion;
-                            }
-
-                            // Cancel any outstanding HTTP requests
-                            if (_httpClient != null)
-                            {
-                                _httpClient.CancelPendingRequests();
-                                _httpClient.Dispose();
-                            }
-
-                            // Wait for launchers to complete
-                            Task.WaitAll(completionTasks);
-                        }
-                        catch (Exception ex)
-                        {
-                            ex = ex.GetBaseException();
-                            var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_CompletionFailure, ex.Message);
-                            Logger.LogError(message, ex);
+                            _httpClient.CancelPendingRequests();
+                            _httpClient.Dispose();
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        ex = ex.GetBaseException();
+                        var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_CompletionFailure, ex.Message);
+                        Logger.LogError(message, ex);
+                    }
                 }
-                base.Dispose(disposing);
             }
+            base.Dispose(disposing);
+        }
+
+        protected virtual Task OnWebHookAttempt(WebHookWorkItem workitem)
+        {
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -143,7 +118,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
         protected virtual Task OnWebHookRetry(WebHookWorkItem workItem)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -153,7 +128,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
         protected virtual Task OnWebHookSuccess(WebHookWorkItem workItem)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -164,7 +139,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
         protected virtual Task OnWebHookFailure(WebHookWorkItem workItem)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -174,13 +149,20 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
         protected virtual Task OnWebHookGone(WebHookWorkItem workItem)
         {
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
-        private async Task DelayedLaunchWebHook(WebHookWorkItem item, TimeSpan delay)
+        private async Task SendWithPolly(WebHookWorkItem workitem)
         {
-            await Task.Delay(delay);
-            await LaunchWebHook(item);
+            try
+            {
+                var policy = _policies.GetOrAdd(workitem.WebHook.WebHookUri.Host, CreatePolicy);
+                await policy.ExecuteAsync((CancellationToken cancellationToken) => LaunchWebHook(workitem, cancellationToken), CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                await OnWebHookFailure(workitem);
+            }
         }
 
         /// <summary>
@@ -188,58 +170,52 @@ namespace Microsoft.AspNetCore.WebHooks
         /// </summary>
         /// <remarks>We don't let exceptions propagate out from this method as it is used by the launchers
         /// and if they see an exception they shut down.</remarks>
-        private async Task LaunchWebHook(WebHookWorkItem workItem)
+        private async Task LaunchWebHook(WebHookWorkItem workItem, CancellationToken cancellationToken)
         {
-            try
-            {
-                // Setting up and send WebHook request
-                var request = CreateWebHookRequest(workItem);
-                var response = await _httpClient.SendAsync(request);
+            await OnWebHookAttempt(workItem);
 
-                var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_Result, workItem.WebHook.Id, response.StatusCode, workItem.Offset);
-                Logger.LogInformation(message);
+            var request = CreateWebHookRequest(workItem);
+            var response = await _httpClient.SendAsync(request, cancellationToken);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    // If we get a successful response then we are done.
-                    await OnWebHookSuccess(workItem);
-                    return;
-                }
-                else if (response.StatusCode == HttpStatusCode.Gone)
-                {
-                    // If we get a 410 Gone then we are also done.
-                    await OnWebHookGone(workItem);
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_WebHookFailure, workItem.Offset, workItem.WebHook.Id, ex.Message);
-                Logger.LogInformation(message, ex);
-            }
+            var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_Result, workItem.WebHook.Id, response.StatusCode, workItem.Offset);
+            Logger.LogInformation(message);
 
-            try
+            if (response.IsSuccessStatusCode)
             {
-                // See if we should retry the request with delay or give up
-                workItem.Offset++;
-                if (workItem.Offset < _launchers.Length)
-                {
-                    // If we are to retry then we submit the request again after a delay.
-                    await OnWebHookRetry(workItem);
-                    _launchers[workItem.Offset].Post(workItem);
-                }
-                else
-                {
-                    var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_GivingUp, workItem.WebHook.Id, workItem.Offset);
-                    Logger.LogInformation(message);
-                    await OnWebHookFailure(workItem);
-                }
+                // If we get a successful response then we are done.
+                await OnWebHookSuccess(workItem);
+                return;
             }
-            catch (Exception ex)
+            else if (response.StatusCode == HttpStatusCode.Gone)
             {
-                var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_WebHookFailure, workItem.Offset, workItem.WebHook.Id, ex.Message);
-                Logger.LogInformation(message, ex);
+                // If we get a 410 Gone then we are also done.
+                await OnWebHookGone(workItem);
+                return;
             }
+            else
+            {
+                response.EnsureSuccessStatusCode(); // throw exception to handle via Polly
+            }
+        }
+
+        
+
+        private static AsyncPolicy CreatePolicy(string arg)
+        {
+            var timeout = Policy.TimeoutAsync(TimeSpan.FromSeconds(100), Polly.Timeout.TimeoutStrategy.Optimistic);
+
+            var waitAndRetryPolicy = Policy
+               .Handle<Exception>(e => !(e is BrokenCircuitException)) // Exception filtering!  We don't retry if the inner circuit-breaker judges the underlying system is out of commission!
+               .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(1 * attempt));
+
+            var circuitBreakerPolicy = Policy
+               .Handle<Exception>()
+               .CircuitBreakerAsync(
+                   exceptionsAllowedBeforeBreaking: 4,
+                   durationOfBreak: TimeSpan.FromSeconds(10)
+               );
+
+            return Policy.WrapAsync(timeout, waitAndRetryPolicy, circuitBreakerPolicy);
         }
     }
 }

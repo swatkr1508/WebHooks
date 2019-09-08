@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using Microsoft.AspNetCore.WebHooks;
-using Microsoft.AspNetCore.WebHooks.Custom.SqlStorage.Internal;
+using Microsoft.AspNetCore.WebHooks.Custom.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -18,15 +18,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="connectionString">The connection string that is used.</param>
         /// <param name="configureOptions">The connection string that is used.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static IMvcBuilder AddWebHooksWithSqlStorage(this IMvcBuilder builder, string connectionString, Action<WebHookSettings> configureOptions)
+        public static IMvcBuilder AddWebHooks(this IMvcBuilder builder, Action<WebHookSettings> configureOptions)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.AddWebHooks(configureOptions);
-            WebHookServiceCollectionSetup.AddWebHookServicesWithSqlBackend(builder.Services, connectionString);
+            WebHookServiceCollectionSetup.AddWebHookServices(builder.Services, configureOptions);
             return builder;
         }
     }

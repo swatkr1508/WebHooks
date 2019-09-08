@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebHooks.Custom.Properties;
 using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.Extensions.Logging;
 

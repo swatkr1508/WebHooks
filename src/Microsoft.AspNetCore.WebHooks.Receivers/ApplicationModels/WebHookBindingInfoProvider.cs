@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.WebHooks.Metadata;
 using Microsoft.AspNetCore.WebHooks.Properties;
+using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 

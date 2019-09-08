@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebHooks.Metadata;
 using Microsoft.AspNetCore.WebHooks.Properties;
+using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 

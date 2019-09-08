@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebHooks.Metadata;
 using Microsoft.AspNetCore.WebHooks.Properties;
+using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.WebHooks.Routing

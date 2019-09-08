@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.WebHooks.Properties;
+using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

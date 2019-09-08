@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebHooks.Properties;
+using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.WebHooks.Filters

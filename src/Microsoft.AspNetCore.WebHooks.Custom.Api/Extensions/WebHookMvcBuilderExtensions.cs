@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Microsoft.AspNetCore.WebHooks.Internal;
 
@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            WebHookServiceCollectionSetup.AddWebHookServices(builder.Services);
+            WebHookServiceCollectionSetup.AddWebHookServicesApi(builder.Services);
 
             return builder;
         }

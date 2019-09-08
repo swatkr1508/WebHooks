@@ -30,6 +30,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomCoreSender", "samples
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebHooks.Receivers", "src\Microsoft.AspNetCore.WebHooks.Receivers\Microsoft.AspNetCore.WebHooks.Receivers.csproj", "{5F992AB8-4DBC-481B-9241-BC6A5582D460}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9C7BEEC2-1A50-40A7-ACC3-8A844E361540}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebHooks.Custom.Tests", "tests\Microsoft.AspNetCore.WebHooks.Custom.Tests\Microsoft.AspNetCore.WebHooks.Custom.Tests.csproj", "{AB2A37C7-3208-484E-8F87-B52564C50DD0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +68,10 @@ Global
 		{5F992AB8-4DBC-481B-9241-BC6A5582D460}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F992AB8-4DBC-481B-9241-BC6A5582D460}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F992AB8-4DBC-481B-9241-BC6A5582D460}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB2A37C7-3208-484E-8F87-B52564C50DD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB2A37C7-3208-484E-8F87-B52564C50DD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB2A37C7-3208-484E-8F87-B52564C50DD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB2A37C7-3208-484E-8F87-B52564C50DD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +84,7 @@ Global
 		{9E3C8783-CD22-4E48-AA15-2338B68F2256} = {E957C8D9-B4A0-488B-838F-BAB4DE080A76}
 		{58B4D13E-A97D-473E-91FE-0C5B7CB79B81} = {E957C8D9-B4A0-488B-838F-BAB4DE080A76}
 		{5F992AB8-4DBC-481B-9241-BC6A5582D460} = {929F44D0-A040-4DC3-A22F-4C5829C05D44}
+		{AB2A37C7-3208-484E-8F87-B52564C50DD0} = {9C7BEEC2-1A50-40A7-ACC3-8A844E361540}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45

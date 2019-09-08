@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebHooks.Properties;
+using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 using Microsoft.AspNetCore.WebHooks.Utilities;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;

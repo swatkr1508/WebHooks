@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.WebHooks.Custom.Properties;
 using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

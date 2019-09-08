@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.WebHooks.Properties;
+using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 
 namespace Microsoft.AspNetCore.WebHooks.Metadata
 {
