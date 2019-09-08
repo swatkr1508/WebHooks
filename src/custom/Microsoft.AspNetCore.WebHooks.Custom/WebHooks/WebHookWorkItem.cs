@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.WebHooks
     public class WebHookWorkItem
     {
         private string _id;
-        private IEnumerable<NotificationDictionary> _notifications;
         private IDictionary<string, object> _properties;
 
         /// <summary>
@@ -30,7 +29,7 @@ namespace Microsoft.AspNetCore.WebHooks
             }
 
             WebHook = webHook;
-            _notifications = notifications;
+            Notifications = notifications;
         }
 
         /// <summary>
@@ -65,13 +64,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <summary>
         /// Gets the set of <see cref="NotificationDictionary"/> that caused the WebHook to be fired.
         /// </summary>
-        public IEnumerable<NotificationDictionary> Notifications
-        {
-            get
-            {
-                return _notifications;
-            }
-        }
+        public IEnumerable<NotificationDictionary> Notifications { get; }
 
         /// <summary>
         /// Gets the set of additional properties associated with this <see cref="WebHookWorkItem"/> instance.

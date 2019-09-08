@@ -72,18 +72,18 @@ namespace Microsoft.AspNetCore.WebHooks
         /// which WebHook events that this WebHook will be notified for. The list of filters can be obtained from
         /// the registered <see cref="IWebHookFilterManager"/> instance.
         /// </summary>
-        public ISet<string> Filters { get; }
+        public ISet<string> Filters { get; set; }
 
         /// <summary>
         /// Gets a set of additional HTTP headers that will be sent with the WebHook request.
         /// </summary>
-        public IDictionary<string, string> Headers { get; }
+        public IDictionary<string, string> Headers { get; set; }
 
         /// <summary>
         /// Gets a set of additional case-insensitive properties that will be sent with the WebHook request
         /// as part of the HTTP request entity body.
         /// </summary>
-        public IDictionary<string, object> Properties { get; }
+        public IDictionary<string, object> Properties { get; set; }
 
         private static string GetId()
         {
