@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebHooks.Filters;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace P112.WebHooks.Filters
 {
     public sealed class PandoraVerifySignatureFilter : WebHookVerifySignatureFilter, IAsyncResourceFilter
     {
-        public PandoraVerifySignatureFilter(IConfiguration configuration, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
+        public PandoraVerifySignatureFilter(IConfiguration configuration, IHostEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
             : base(configuration, hostingEnvironment, loggerFactory)
         {
         }
