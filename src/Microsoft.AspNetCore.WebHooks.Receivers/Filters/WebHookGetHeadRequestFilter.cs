@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.WebHooks.Metadata;
 using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.WebHooks.Filters
         /// The <see cref="IConfiguration"/> used to initialize <see cref="WebHookSecurityFilter.Configuration"/>.
         /// </param>
         /// <param name="hostingEnvironment">
-        /// The <see cref="IHostingEnvironment" /> used to initialize
+        /// The <see cref="IHostEnvironment" /> used to initialize
         /// <see cref="WebHookSecurityFilter.HostingEnvironment"/>.
         /// </param>
         /// <param name="loggerFactory">
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.WebHooks.Filters
         /// <param name="getHeadRequestMetadata">The receiver's <see cref="IWebHookGetHeadRequestMetadata"/>.</param>
         public WebHookGetHeadRequestFilter(
             IConfiguration configuration,
-            IHostingEnvironment hostingEnvironment,
+            IHostEnvironment hostingEnvironment,
             ILoggerFactory loggerFactory,
             IWebHookGetHeadRequestMetadata getHeadRequestMetadata)
             : base(configuration, hostingEnvironment, loggerFactory)
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.WebHooks.Filters
         /// The <see cref="IConfiguration"/> used to initialize <see cref="WebHookSecurityFilter.Configuration"/>.
         /// </param>
         /// <param name="hostingEnvironment">
-        /// The <see cref="IHostingEnvironment" /> used to initialize
+        /// The <see cref="IHostEnvironment" /> used to initialize
         /// <see cref="WebHookSecurityFilter.HostingEnvironment"/>.
         /// </param>
         /// <param name="loggerFactory">
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.WebHooks.Filters
         /// <remarks>This overload is intended for use with <see cref="GeneralWebHookAttribute"/>.</remarks>
         public WebHookGetHeadRequestFilter(
             IConfiguration configuration,
-            IHostingEnvironment hostingEnvironment,
+            IHostEnvironment hostingEnvironment,
             ILoggerFactory loggerFactory,
             WebHookMetadataProvider metadataProvider)
             : base(configuration, hostingEnvironment, loggerFactory)

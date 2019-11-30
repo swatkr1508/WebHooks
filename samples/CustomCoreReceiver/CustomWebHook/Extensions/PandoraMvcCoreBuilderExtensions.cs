@@ -27,7 +27,6 @@ namespace Microsoft.Extensions.DependencyInjection
             PandoraServiceCollectionSetup.AddPandoraServices(builder.Services);
 
             return builder
-                .AddJsonFormatters()
                 .AddWebHooks();
         }
     }

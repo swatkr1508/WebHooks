@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 using Microsoft.AspNetCore.WebHooks.Utilities;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.WebHooks.Filters
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.WebHooks.Filters
         /// The <see cref="IConfiguration"/> used to initialize <see cref="WebHookSecurityFilter.Configuration"/>.
         /// </param>
         /// <param name="hostingEnvironment">
-        /// The <see cref="IHostingEnvironment" /> used to initialize
+        /// The <see cref="IHostEnvironment" /> used to initialize
         /// <see cref="WebHookSecurityFilter.HostingEnvironment"/>.
         /// </param>
         /// <param name="loggerFactory">
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.WebHooks.Filters
         /// </param>
         protected WebHookVerifySignatureFilter(
             IConfiguration configuration,
-            IHostingEnvironment hostingEnvironment,
+            IHostEnvironment hostingEnvironment,
             ILoggerFactory loggerFactory)
             : base(configuration, hostingEnvironment, loggerFactory)
         {
