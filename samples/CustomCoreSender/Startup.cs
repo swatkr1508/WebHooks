@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.Extensions.Hosting;
 
 namespace CustomCoreSender
 {
@@ -33,7 +34,7 @@ namespace CustomCoreSender
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -44,7 +45,7 @@ namespace CustomCoreSender
 
             app.UseAuthentication();
 
-            app.UseMvc();
+            app.UseRouting();
             app.UseWebHooks();
 
             // Enable middleware to serve generated swagger as a JSON endpoint.
