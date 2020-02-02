@@ -14,7 +14,7 @@ namespace CustomCoreSender
         {
             services.AddMvc()
                 .AddWebHooksApi()
-                .AddWebHooksWithSqlStorage("Server=13.93.78.133;Database=WebHooks_dev;User Id=sa; Password=W3lc0m!0;", x =>
+                .AddWebHooksWithSqlStorage("Server=(localdb)\\MSSQLLocalDB;Database=WebHooks_dev;Integrated Security=true;", x =>
                 {
                     x.Settings = new JsonSerializerSettings
                     {
