@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Swashbuckle.AspNetCore.Swagger;
-using Microsoft.Extensions.Hosting;
 
 namespace CustomCoreSender
 {
@@ -28,7 +29,8 @@ namespace CustomCoreSender
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "CoreSender", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Pandora Box - API", Version = "v1" });
+
             });
 
         }
@@ -43,9 +45,14 @@ namespace CustomCoreSender
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
-
             app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
             app.UseWebHooks();
 
             // Enable middleware to serve generated swagger as a JSON endpoint.

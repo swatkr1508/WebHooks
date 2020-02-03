@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -90,6 +91,8 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
                 return BadRequest();
             }
 
+            InitializeCollections(webHook);
+
             try
             {
                 // Validate the provided WebHook ID (or force one to be created on server side)
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
             catch (Exception ex)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomApiResources.RegistrationController_RegistrationFailure, ex.Message);
-                _logger.LogInformation(message);
+                _logger.LogInformation(message, ex);
                 return BadRequest(message);
             }
 
@@ -127,6 +130,8 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
             }
         }
 
+        
+
         /// <summary>
         /// Updates an existing WebHook registration.
         /// </summary>
@@ -145,6 +150,8 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
                 return BadRequest();
             }
 
+            InitializeCollections(webHook);
+
             try
             {
                 // Validate parts of WebHook
@@ -155,7 +162,7 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
             catch (Exception ex)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomApiResources.RegistrationController_RegistrationFailure, ex.Message);
-                _logger.LogInformation(message);
+                _logger.LogInformation(message, ex);
                 return BadRequest(message);
             }
 
@@ -283,6 +290,16 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
                 default:
                     return StatusCode(500);
             }
+        }
+
+        private static void InitializeCollections(WebHook webHook)
+        {
+            if (webHook.Headers == null)
+                webHook.Headers = new Dictionary<string, string>();
+            if (webHook.Filters == null)
+                webHook.Filters = new HashSet<string>();
+            if (webHook.Properties == null)
+                webHook.Properties = new Dictionary<string, object>();
         }
     }
 }
