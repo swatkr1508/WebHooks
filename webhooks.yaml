@@ -19,10 +19,10 @@ jobs:
   steps:
 
   # Update .Net Core SDK
-  - task: DotNetCoreInstaller@0
+  - task: DotNetCoreInstaller@2
     displayName: 'Use .NET Core sdk 3.0.100'
     inputs:
-      version: 3.0.100
+      version: 3.1.100
 
   # Dot Net Build
   - task: DotNetCoreCLI@2
