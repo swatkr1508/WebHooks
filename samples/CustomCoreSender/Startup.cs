@@ -43,11 +43,13 @@ namespace CustomCoreSender
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseStaticFiles();
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseStaticFiles();
 
             app.UseEndpoints(endpoints =>
             {
