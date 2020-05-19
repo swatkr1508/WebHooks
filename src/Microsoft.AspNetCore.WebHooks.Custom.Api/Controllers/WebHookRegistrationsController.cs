@@ -113,6 +113,15 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
 
             try
             {
+                // Check existing webhooks for duplicate url
+                var existing = await _registrationsManager.GetWebHooksAsync(User, RemovePrivateFilters);
+                if (existing.Any(x => x.WebHookUri == webHook.WebHookUri))
+                {
+                    var message = string.Format(CultureInfo.CurrentCulture, CustomApiResources.RegistrationController_RegistrationFailure, $"{webHook.WebHookUri.AbsoluteUri} already registered");
+                    _logger.LogInformation(message);
+                    return BadRequest(message);
+                }
+
                 // Add WebHook for this user.
                 var result = await _registrationsManager.AddWebHookAsync(User, webHook, AddPrivateFilters);
                 if (result == StoreResult.Success)
