@@ -122,6 +122,12 @@ namespace Microsoft.AspNetCore.WebHooks.Controllers
                 }
                 return CreateHttpResult(result);
             }
+            catch (InvalidOperationException ex)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, CustomApiResources.RegistrationController_RegistrationFailure, ex.Message);
+                _logger.LogInformation(message, ex);
+                return BadRequest(message);
+            }
             catch (Exception ex)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomApiResources.RegistrationController_RegistrationFailure, ex.Message);

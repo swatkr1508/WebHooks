@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebHooks.Custom.Properties;
-using Microsoft.AspNetCore.WebHooks.Properties;
 
 namespace Microsoft.AspNetCore.WebHooks
 {
@@ -81,6 +81,12 @@ namespace Microsoft.AspNetCore.WebHooks
             }
 
             var userId = await _userManager.GetUserIdAsync(user);
+
+            // Check for existing webhook with same URI
+            var existing = await _store.GetAllWebHooksAsync(userId);
+            if (existing.Any(x => x.WebHookUri == webHook.WebHookUri))
+                throw new InvalidOperationException($"WebHook with URI {webHook.WebHookUri.AbsoluteUri} already registered");
+
             await ApplyServiceSideFilterPredicate(userId, new[] { webHook }, predicate);
 
             var result = await _store.InsertWebHookAsync(userId, webHook);
