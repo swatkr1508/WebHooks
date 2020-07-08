@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.CircuitBreaker;
+using Polly.Timeout;
 
 namespace Microsoft.AspNetCore.WebHooks
 {
@@ -232,13 +233,14 @@ namespace Microsoft.AspNetCore.WebHooks
 
             var waitAndRetryPolicy = Policy
                .Handle<HttpRequestException>()
+               .Or<TimeoutRejectedException>()
                .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(1 * attempt));
 
             var circuitBreakerPolicy = Policy
-               .Handle<HttpRequestException>()
+               .Handle<Exception>(e => e is TimeoutRejectedException || e is HttpRequestException)
                .CircuitBreakerAsync(
                    exceptionsAllowedBeforeBreaking: 4,
-                   durationOfBreak: TimeSpan.FromSeconds(10)
+                   durationOfBreak: TimeSpan.FromSeconds(30)
                );
 
             return new WebHookPolicyItem(Policy.WrapAsync(waitAndRetryPolicy, circuitBreakerPolicy).WrapAsync(timeout));

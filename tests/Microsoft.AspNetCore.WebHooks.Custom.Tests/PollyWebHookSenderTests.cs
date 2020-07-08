@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
 
             await target.SendWebHookWorkItemsAsync(new List<WebHookWorkItem>
             {
-                new WebHookWorkItem(new WebHook { WebHookUri = new System.Uri("http://local"), Secret = Secret }, new List<NotificationDictionary>()
+                new WebHookWorkItem(new WebHook { WebHookUri = new System.Uri("http://nu.nl"), Secret = Secret }, new List<NotificationDictionary>()
                 {
                     new NotificationDictionary("test", new { Bla = "Test" }),
                 })
