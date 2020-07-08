@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.WebHooks
         }
     }
 
-    internal struct WebhookBody
+    internal class WebhookBody
     {
         public string Id { get; set; }
         public int Attempt { get; set; }

@@ -4,21 +4,17 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.WebHooks.Custom.Properties;
-using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.CircuitBreaker;
-using Polly.Wrap;
 
 namespace Microsoft.AspNetCore.WebHooks
 {
@@ -30,12 +26,15 @@ namespace Microsoft.AspNetCore.WebHooks
     public class PollyWebHookSender : WebHookSender
     {
         private readonly HttpClient _httpClient;
-        private readonly ConcurrentDictionary<string, AsyncPolicy> _policies;
+        private readonly ConcurrentDictionary<string, WebHookPolicyItem> _policies;
+
+        private readonly object _cleaningLock = new object();
+        private volatile bool _cleaningPolicy;
 
         private bool _disposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataflowWebHookSender"/> class with a default retry policy.
+        /// Initializes a new instance of the <see cref="PollyWebHookSender"/> class with a default retry policy.
         /// </summary>
         /// <param name="logger">The current <see cref="ILogger"/>.</param>
         /// <param name="settings">The current <see cref="WebHookSettings"/>.</param>
@@ -46,14 +45,14 @@ namespace Microsoft.AspNetCore.WebHooks
 
 
         /// <summary>
-        /// Initialize a new instance of the <see cref="DataflowWebHookSender"/> with the given retry policy, <paramref name="options"/>,
+        /// Initialize a new instance of the <see cref="PollyWebHookSender"/> with the given retry policy, <paramref name="options"/>,
         /// and <paramref name="httpClient"/>. This constructor is intended for unit testing purposes.
         /// </summary>
         internal PollyWebHookSender(HttpClient httpClient, ILogger<PollyWebHookSender> logger, IOptions<WebHookSettings> settings)
             : base(logger, settings)
         {
             _httpClient = httpClient ?? new HttpClient();
-            _policies = new ConcurrentDictionary<string, AsyncPolicy>();
+            _policies = new ConcurrentDictionary<string, WebHookPolicyItem>();
         }
 
         /// <inheritdoc />
@@ -156,11 +155,35 @@ namespace Microsoft.AspNetCore.WebHooks
         {
             try
             {
-                var policy = _policies.GetOrAdd(workitem.WebHook.WebHookUri.Host, CreatePolicy);
-                await policy.ExecuteAsync((CancellationToken cancellationToken) => LaunchWebHook(workitem, cancellationToken), CancellationToken.None);
+                var policy = _policies.GetOrAdd(workitem.WebHook.Id, CreatePolicy);
+                policy.LastUsed = DateTime.UtcNow;
+                await policy.Policy.ExecuteAsync((CancellationToken cancellationToken) => LaunchWebHook(workitem, cancellationToken), CancellationToken.None);
+
+                if (!_cleaningPolicy)
+                {
+                    lock (_cleaningLock)
+                    {
+                        _cleaningPolicy = true;
+                        try
+                        {
+                            foreach (var item in _policies)
+                            {
+                                if (item.Value.LastUsed < DateTime.UtcNow.Subtract(TimeSpan.FromDays(1)))
+                                {
+                                    _policies.TryRemove(item.Key, out var _);
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            _cleaningPolicy = false;
+                        }
+                    }
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.LogInformation($"Failed to send WebhookItem({workitem.Id}), Exception: {ex}");
                 await OnWebHookFailure(workitem);
             }
         }
@@ -201,24 +224,37 @@ namespace Microsoft.AspNetCore.WebHooks
             }
         }
 
-        
 
-        private static AsyncPolicy CreatePolicy(string arg)
+
+        private static WebHookPolicyItem CreatePolicy(string arg)
         {
             var timeout = Policy.TimeoutAsync(TimeSpan.FromSeconds(10), Polly.Timeout.TimeoutStrategy.Optimistic);
 
             var waitAndRetryPolicy = Policy
-               .Handle<Exception>(e => !(e is BrokenCircuitException)) // Exception filtering!  We don't retry if the inner circuit-breaker judges the underlying system is out of commission!
+               .Handle<HttpRequestException>()
                .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(1 * attempt));
 
             var circuitBreakerPolicy = Policy
-               .Handle<Exception>()
+               .Handle<HttpRequestException>()
                .CircuitBreakerAsync(
                    exceptionsAllowedBeforeBreaking: 4,
                    durationOfBreak: TimeSpan.FromSeconds(10)
                );
 
-            return Policy.WrapAsync(waitAndRetryPolicy, circuitBreakerPolicy).WrapAsync(timeout);
+            return new WebHookPolicyItem(Policy.WrapAsync(waitAndRetryPolicy, circuitBreakerPolicy).WrapAsync(timeout));
+        }
+
+        private class WebHookPolicyItem
+        {
+            public WebHookPolicyItem(IAsyncPolicy policy)
+            {
+                Policy = policy;
+            }
+
+            public IAsyncPolicy Policy { get; }
+            internal DateTime? LastUsed { get; set; }
         }
     }
+
+
 }
