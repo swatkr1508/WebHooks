@@ -58,13 +58,14 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
         [TestMethod]
         public async Task SendWebhookWorkItem_CircuitBreaker_Test()
         {
+            var id = Guid.NewGuid().ToString();
             var logger = new DummyLogger<PollyWebHookSender>();
             var httpClient = new HttpClient(new ExceptionWebhookHandler());
             var target = new WebhookSenderProxy(httpClient, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
-
+            var webhook = new WebHook { Id = id, WebHookUri = new System.Uri("http://nu.nl"), Secret = Secret };
             await target.SendWebHookWorkItemsAsync(new List<WebHookWorkItem>
             {
-                new WebHookWorkItem(new WebHook { WebHookUri = new System.Uri("http://local"), Secret = Secret }, new List<NotificationDictionary>()
+                new WebHookWorkItem(webhook, new List<NotificationDictionary>()
                 {
                     new NotificationDictionary("test", new { Bla = "Test" }),
                 })
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
 
             await target.SendWebHookWorkItemsAsync(new List<WebHookWorkItem>
             {
-                new WebHookWorkItem(new WebHook { WebHookUri = new System.Uri("http://local"), Secret = Secret }, new List<NotificationDictionary>()
+                new WebHookWorkItem(webhook, new List<NotificationDictionary>()
                 {
                     new NotificationDictionary("test", new { Bla = "Test" }),
                 })
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
 
             await target.SendWebHookWorkItemsAsync(new List<WebHookWorkItem>
             {
-                new WebHookWorkItem(new WebHook { WebHookUri = new System.Uri("http://local"), Secret = Secret }, new List<NotificationDictionary>()
+                new WebHookWorkItem(webhook, new List<NotificationDictionary>()
                 {
                     new NotificationDictionary("test", new { Bla = "Test" }),
                 })
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
         {
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                throw new HttpRequestException();
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
             }
         }
 
