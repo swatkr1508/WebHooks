@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.WebHooks
         protected WebHookStore()
         {
         }
+
+        public abstract Task<ICollection<WebHook>> GetAllWebHooksAsync();
 
         /// <inheritdoc />
         public abstract Task<ICollection<WebHook>> GetAllWebHooksAsync(string user);
@@ -39,6 +41,8 @@ namespace Microsoft.AspNetCore.WebHooks
 
         /// <inheritdoc />
         public abstract Task DeleteAllWebHooksAsync(string user);
+
+        public abstract Task<StoreResult> DisableWebhookAsync(string id);
 
         /// <inheritdoc />
         public abstract Task<ICollection<WebHook>> QueryWebHooksAcrossAllUsersAsync(IEnumerable<string> actions, Func<WebHook, string, bool> predicate);

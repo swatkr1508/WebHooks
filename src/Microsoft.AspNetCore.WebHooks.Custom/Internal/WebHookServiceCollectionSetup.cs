@@ -20,8 +20,10 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Internal
             services.AddTransient<IWebHookUser, WebHookUser>();
 
             services.AddSingleton<IWebHookFilterProvider, WildcardWebHookFilterProvider>();
-            services.AddSingleton<IWebHookSender, PollyWebHookSender>();
             services.AddSingleton<IWebHookFilterManager, WebHookFilterManager>();
+            services.AddSingleton<IWebhookPolicyContainer, WebhookPolicyContainer>();
+            services.AddSingleton<IWebHookSender, PollyWebHookSender>();
+            services.AddHostedService<WebhookPolicyContainerCleanupService>();
 
             services.AddTransient<IWebHookManager, WebHookManager>();
             services.AddTransient<IWebHookRegistrationsManager, WebHookRegistrationsManager>();

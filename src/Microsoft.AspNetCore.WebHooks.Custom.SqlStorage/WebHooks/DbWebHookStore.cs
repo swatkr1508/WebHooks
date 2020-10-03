@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using System.Linq;
@@ -66,6 +67,24 @@ namespace Microsoft.AspNetCore.WebHooks
             }
 
             _protector = protector;
+        }
+
+        public override async Task<ICollection<WebHook>> GetAllWebHooksAsync()
+        {
+            try
+            {
+                var registrations = await _context.Set<TRegistration>().ToArrayAsync();
+                ICollection<WebHook> result = registrations.Select(r => ConvertToWebHook(r))
+                    .Where(w => w != null)
+                    .ToArray();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, SqlStorageResources.SqlStore_OperationFailed, "Get", ex.Message);
+                _logger.LogError(message, ex);
+                throw new InvalidOperationException(message, ex);
+            }
         }
 
         /// <inheritdoc />
@@ -241,12 +260,12 @@ namespace Microsoft.AspNetCore.WebHooks
                 _logger.LogError(message, uex);
                 return StoreResult.Conflict;
             }
-            //catch (OptimisticConcurrencyException ocex)
-            //{
-            //    var message = string.Format(CultureInfo.CurrentCulture, SqlStorageResources.SqlStore_ConcurrencyError, "Update", ocex.Message);
-            //    _logger.Error(message, ocex);
-            //    return StoreResult.Conflict;
-            //}
+            catch (DBConcurrencyException ocex)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, SqlStorageResources.SqlStore_ConcurrencyError, "Update", ocex.Message);
+                _logger.LogError(message, ocex);
+                return StoreResult.Conflict;
+            }
             catch (SqlException sqlex)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, SqlStorageResources.SqlStore_SqlOperationFailed, "Update", sqlex.Message);

@@ -20,7 +20,9 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
         {
             var logger = new DummyLogger<PollyWebHookSender>();
             var httpClient = new HttpClient(new NormalWebhookHandler());
-            var target = new WebhookSenderProxy(httpClient, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
+            var policyContainer = new WebhookPolicyContainer();
+
+            var target = new WebhookSenderProxy(httpClient, policyContainer, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
 
             await target.SendWebHookWorkItemsAsync(new List<WebHookWorkItem>
             {
@@ -40,7 +42,9 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
         {
             var logger = new DummyLogger<PollyWebHookSender>();
             var httpClient = new HttpClient(new ExceptionWebhookHandler());
-            var target = new WebhookSenderProxy(httpClient, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
+            var policyContainer = new WebhookPolicyContainer();
+
+            var target = new WebhookSenderProxy(httpClient, policyContainer, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
 
             await target.SendWebHookWorkItemsAsync(new List<WebHookWorkItem>
             {
@@ -61,7 +65,9 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
             var id = Guid.NewGuid().ToString();
             var logger = new DummyLogger<PollyWebHookSender>();
             var httpClient = new HttpClient(new ExceptionWebhookHandler());
-            var target = new WebhookSenderProxy(httpClient, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
+            var policyContainer = new WebhookPolicyContainer();
+
+            var target = new WebhookSenderProxy(httpClient, policyContainer, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
             var webhook = new WebHook { Id = id, WebHookUri = new System.Uri("http://nu.nl"), Secret = Secret };
             await target.SendWebHookWorkItemsAsync(new List<WebHookWorkItem>
             {
@@ -97,7 +103,9 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
         {
             var logger = new DummyLogger<PollyWebHookSender>();
             var httpClient = new HttpClient(new TimeoutWebhookHandler());
-            var target = new WebhookSenderProxy(httpClient, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
+
+            var policyContainer = new WebhookPolicyContainer();
+            var target = new WebhookSenderProxy(httpClient, policyContainer, logger, new OptionsWrapper<WebHookSettings>(new WebHookSettings()));
 
             await target.SendWebHookWorkItemsAsync(new List<WebHookWorkItem>
             {
@@ -141,8 +149,8 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
 
         private class WebhookSenderProxy : PollyWebHookSender
         {
-            public WebhookSenderProxy(HttpClient httpClient, ILogger<PollyWebHookSender> logger, IOptions<WebHookSettings> settings)
-                : base(httpClient, logger, settings)
+            public WebhookSenderProxy(HttpClient httpClient, IWebhookPolicyContainer policyContainer, ILogger<PollyWebHookSender> logger, IOptions<WebHookSettings> settings)
+                : base(httpClient, policyContainer, logger, settings)
             {
 
             }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,12 @@ namespace Microsoft.AspNetCore.WebHooks
     /// </summary>
     public interface IWebHookStore
     {
+        /// <summary>
+        /// Gets all registered <see cref="WebHook"/> instances.
+        /// </summary>
+        /// <returns>All registered <see cref="WebHook"/> instances.</returns>
+        Task<ICollection<WebHook>> GetAllWebHooksAsync();
+
         /// <summary>
         /// Gets all registered <see cref="WebHook"/> instances for a given <paramref name="user"/>.
         /// </summary>
@@ -66,6 +72,8 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <param name="id">The ID uniquely identifying the WebHook.</param>
         /// <returns>A <see cref="StoreResult"/> indicating the result of the operation.</returns>
         Task<StoreResult> DeleteWebHookAsync(string user, string id);
+
+        Task<StoreResult> DisableWebhookAsync(string id);
 
         /// <summary>
         /// Deletes all existing <see cref="WebHook"/> instances for a given <paramref name="user"/>.
