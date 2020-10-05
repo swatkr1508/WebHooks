@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,6 +20,11 @@ namespace Microsoft.AspNetCore.WebHooks
     {
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, WebHook>> _store =
             new ConcurrentDictionary<string, ConcurrentDictionary<string, WebHook>>();
+
+        public override Task<ICollection<WebHook>> GetAllWebHooksAsync()
+        {
+            return Task.FromResult<ICollection<WebHook>>(_store.Values.SelectMany(x => x.Values).ToList());
+        }
 
         /// <inheritdoc />
         public override Task<ICollection<WebHook>> GetAllWebHooksAsync(string user)
@@ -186,6 +191,18 @@ namespace Microsoft.AspNetCore.WebHooks
             return Task.FromResult(true);
         }
 
+        public override Task<StoreResult> DisableWebhookAsync(string id)
+        {
+            foreach (var item in _store.Values)
+                foreach (var webhook in item.Values)
+                    if (webhook.Id == id)
+                        webhook.IsPaused = true;
+
+            return Task.FromResult(StoreResult.Success);
+        }
+
+
+
         /// <inheritdoc />
         public override Task<ICollection<WebHook>> QueryWebHooksAcrossAllUsersAsync(IEnumerable<string> actions, Func<WebHook, string, bool> predicate)
         {
@@ -208,5 +225,7 @@ namespace Microsoft.AspNetCore.WebHooks
         {
             return true;
         }
+
+        
     }
 }
