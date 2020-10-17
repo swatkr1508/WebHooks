@@ -78,18 +78,18 @@ namespace Microsoft.AspNetCore.WebHooks
 
                         foreach (var itemToRemove in itemsToRemove)
                         {
-                            var webhook = webhooks.SingleOrDefault(x => x.Id == itemToRemove.Id);
-                            _policyContainers.RemovePolicyFor(webhook);
+                            _policyContainers.RemovePolicyFor(new WebHook { Id = itemToRemove.Id });
                         }
 
-                        foreach (var itemToRemove in itemsToRemove)
+                        foreach (var itemToDisable in itemsToDisable)
                         {
-                            var webhook = webhooks.SingleOrDefault(x => x.Id == itemToRemove.Id);
-
-                            _logger.LogInformation($"Pausing webhook registration with id {webhook.Id}");
-
-                            await manager.DisableWebhookAsync(webhook.Id);
-                            _policyContainers.RemovePolicyFor(webhook);
+                            var webhook = webhooks.SingleOrDefault(x => x.Id == itemToDisable.Id);
+                            if (webhook != null)
+                            {
+                                _logger.LogInformation($"Pausing webhook registration with id {webhook.Id}");
+                                await manager.DisableWebhookAsync(webhook.Id);
+                            }
+                            _policyContainers.RemovePolicyFor(new WebHook { Id = itemToDisable.Id });
                         }
                     }
                 }
