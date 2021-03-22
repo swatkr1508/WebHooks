@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.WebHooks
             try
             {
                 // Setting up and send WebHook request
-                var request = CreateWebHookRequest(workItem);
+                var request = await CreateWebHookRequest(workItem);
                 var response = await _httpClient.SendAsync(request);
 
                 var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_Result, workItem.WebHook.Id, response.StatusCode, workItem.Offset);
