@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.WebHooks
         {
             //var timeout = Policy.TimeoutAsync(TimeSpan.FromSeconds(10), Polly.Timeout.TimeoutStrategy.Optimistic);
 
+
             var waitAndRetryPolicy = Policy
                .Handle<HttpRequestException>()
                .Or<TimeoutRejectedException>()

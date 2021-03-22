@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.WebHooks
         private readonly HttpClient _httpClient;
 
         private bool _disposed;
+        private ICollection<WebHook> _allWebhooks;
 
         /// <summary>
         /// Initialize a new instance of the <see cref="WebHookManager"/> with a default retry policy.
@@ -120,15 +121,18 @@ namespace Microsoft.AspNetCore.WebHooks
             ICollection<NotificationDictionary> nots = notifications.ToArray();
             var actions = nots.Select(n => n.Action).ToArray();
 
-            // Find all active WebHooks that matches at least one of the actions
-            var webHooks = await _webHookStore.QueryWebHooksAcrossAllUsersAsync(actions, predicate);
-
+            if (_allWebhooks is null)
+            {
+                // Find all active WebHooks that matches at least one of the actions
+                var webHooks = await _webHookStore.QueryWebHooksAcrossAllUsersAsync(actions, predicate);
+                _allWebhooks = webHooks;
+            }
             // For each WebHook set up a work item with the right set of notifications
-            var workItems = GetWorkItems(webHooks, nots);
+            var workItems = GetWorkItems(_allWebhooks, nots);
 
             // Start sending WebHooks
-            _ = _webHookSender.SendWebHookWorkItemsAsync(workItems);
-            return webHooks.Count;
+            await _webHookSender.SendWebHookWorkItemsAsync(workItems);
+            return _allWebhooks.Count;
         }
 
         /// <inheritdoc />
