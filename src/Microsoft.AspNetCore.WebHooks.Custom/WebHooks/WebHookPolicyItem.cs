@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.WebHooks
 
         private static IAsyncPolicy CreatePolicy()
         {
-            var timeout = Policy.TimeoutAsync(TimeSpan.FromSeconds(10), Polly.Timeout.TimeoutStrategy.Optimistic);
+            //var timeout = Policy.TimeoutAsync(TimeSpan.FromSeconds(10), Polly.Timeout.TimeoutStrategy.Optimistic);
 
             var waitAndRetryPolicy = Policy
                .Handle<HttpRequestException>()
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.WebHooks
                    exceptionsAllowedBeforeBreaking: 4,
                    durationOfBreak: TimeSpan.FromSeconds(30)
             );
-            return Policy.WrapAsync(waitAndRetryPolicy, circuitBreakerPolicy).WrapAsync(timeout);
+            return Policy.WrapAsync(waitAndRetryPolicy, circuitBreakerPolicy);//.WrapAsync(timeout);
         }
     }
 }

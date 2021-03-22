@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.WebHooks
     /// </summary>
     public class PollyWebHookSender : WebHookSender
     {
+        private readonly SemaphoreSlim _semaphoreSlim = new SemaphoreSlim(16);
         private readonly HttpClient _httpClient;
         private readonly IWebhookPolicyContainer _policyContainer;
 
@@ -170,32 +171,44 @@ namespace Microsoft.AspNetCore.WebHooks
         /// and if they see an exception they shut down.</remarks>
         private async Task LaunchWebHook(WebHookWorkItem workItem, CancellationToken cancellationToken)
         {
-            await OnWebHookAttempt(workItem);
-
-            workItem.Offset++;
-
-            var request = CreateWebHookRequest(workItem);
-            var response = await _httpClient.SendAsync(request, cancellationToken);
-
-            var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_Result, workItem.WebHook.Id, response.StatusCode, workItem.Offset);
-            Logger.LogInformation(message);
-
-
-            if (response.IsSuccessStatusCode)
+            await _semaphoreSlim.WaitAsync();
+            try
             {
-                // If we get a successful response then we are done.
-                await OnWebHookSuccess(workItem);
-                return;
+                await OnWebHookAttempt(workItem);
+
+                workItem.Offset++;
+
+                var timeout = new CancellationTokenSource();
+                timeout.CancelAfter(TimeSpan.FromSeconds(10));
+                var ct = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+
+                var request = CreateWebHookRequest(workItem);
+                var response = await _httpClient.SendAsync(request, ct.Token);
+
+                var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_Result, workItem.WebHook.Id, response.StatusCode, workItem.Offset);
+                Logger.LogInformation(message);
+
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // If we get a successful response then we are done.
+                    await OnWebHookSuccess(workItem);
+                    return;
+                }
+                else if (response.StatusCode == HttpStatusCode.Gone)
+                {
+                    // If we get a 410 Gone then we are also done.
+                    await OnWebHookGone(workItem);
+                    return;
+                }
+                else
+                {
+                    response.EnsureSuccessStatusCode(); // throw exception to handle via Polly
+                }
             }
-            else if (response.StatusCode == HttpStatusCode.Gone)
+            finally
             {
-                // If we get a 410 Gone then we are also done.
-                await OnWebHookGone(workItem);
-                return;
-            }
-            else
-            {
-                response.EnsureSuccessStatusCode(); // throw exception to handle via Polly
+                _semaphoreSlim.Release();
             }
         }
     }
