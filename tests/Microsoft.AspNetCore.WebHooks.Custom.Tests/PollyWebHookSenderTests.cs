@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
 {
-    [TestClass]
+    [TestClass, Ignore]
     public class PollyWebHookSenderTests
     {
         private const string Secret = "12345678123456781234567812345678";
