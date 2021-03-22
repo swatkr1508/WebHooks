@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Internal
             services.AddSingleton<IWebHookFilterProvider, WildcardWebHookFilterProvider>();
             services.AddSingleton<IWebHookFilterManager, WebHookFilterManager>();
             services.AddSingleton<IWebhookPolicyContainer, WebhookPolicyContainer>();
-            services.AddSingleton<IWebHookSender, PollyWebHookSender>();
+            services.AddSingleton<IWebHookSender, DataflowWebHookSender>();
             services.AddHostedService<WebhookPolicyContainerCleanupService>();
 
             services.AddTransient<IWebHookManager, WebHookManager>();
