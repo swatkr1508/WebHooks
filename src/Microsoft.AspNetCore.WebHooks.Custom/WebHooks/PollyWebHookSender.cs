@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.WebHooks.Custom.Properties;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.WebHooks
     {
         private readonly HttpClient _httpClient;
         private readonly IWebhookPolicyContainer _policyContainer;
-
+        private readonly ActionBlock<WebHookWorkItem> _launcher;
         private bool _disposed;
 
         /// <summary>
@@ -51,6 +52,12 @@ namespace Microsoft.AspNetCore.WebHooks
         {
             _httpClient = httpClient ?? new HttpClient();
             _policyContainer = policyContainer;
+
+            _launcher = new ActionBlock<WebHookWorkItem>(async item => await SendWithPolly(item), new ExecutionDataflowBlockOptions
+            {
+                MaxDegreeOfParallelism = 8
+            });
+
         }
 
         /// <inheritdoc />
@@ -61,14 +68,12 @@ namespace Microsoft.AspNetCore.WebHooks
                 throw new ArgumentNullException(nameof(workItems));
             }
 
-            var tasklist = new Task[workItems.Count()];
-            var index = 0;
             foreach (var workitem in workItems)
             {
-                tasklist[index++] = SendWithPolly(workitem);
+                _launcher.Post(workitem);
             }
 
-            return Task.WhenAll(tasklist);
+            return Task.CompletedTask;
         }
 
         /// <summary>
