@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
             Assert.IsFalse(target.Success);
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         public async Task SendWebhookWorkItem_Timeout_Test()
         {
             var logger = new DummyLogger<PollyWebHookSender>();
