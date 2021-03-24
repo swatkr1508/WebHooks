@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.WebHooks
 
         private readonly HttpClient _httpClient;
         private readonly ActionBlock<WebHookWorkItem>[] _launchers;
-
+        private readonly IWebhookPolicyContainer _policyContainer;
         private bool _disposed;
 
         /// <summary>
@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.WebHooks
         /// </summary>
         /// <param name="logger">The current <see cref="ILogger"/>.</param>
         /// <param name="settings">The current <see cref="WebHookSettings"/>.</param>
-        public DataflowWebHookSender(ILogger<DataflowWebHookSender> logger, IOptions<WebHookSettings> settings)
-            : this(logger, retryDelays: null, options: null, httpClient: null, settings: settings)
+        public DataflowWebHookSender(IWebhookPolicyContainer policyContainer, ILogger<DataflowWebHookSender> logger, IOptions<WebHookSettings> settings)
+            : this(policyContainer, logger, retryDelays: null, options: null, httpClient: null, settings: settings)
         {
         }
 
@@ -48,15 +48,13 @@ namespace Microsoft.AspNetCore.WebHooks
         /// Initialize a new instance of the <see cref="DataflowWebHookSender"/> with the given retry policy, <paramref name="options"/>,
         /// and <paramref name="httpClient"/>. This constructor is intended for unit testing purposes.
         /// </summary>
-        internal DataflowWebHookSender(ILogger<DataflowWebHookSender> logger, IEnumerable<TimeSpan> retryDelays, ExecutionDataflowBlockOptions options, HttpClient httpClient, IOptions<WebHookSettings> settings)
+        internal DataflowWebHookSender(IWebhookPolicyContainer policyContainer, ILogger<DataflowWebHookSender> logger, IEnumerable<TimeSpan> retryDelays, ExecutionDataflowBlockOptions options, HttpClient httpClient, IOptions<WebHookSettings> settings)
             : base(logger, settings)
         {
+            _policyContainer = policyContainer ?? throw new ArgumentNullException(nameof(policyContainer));
             retryDelays = retryDelays ?? DefaultRetries;
 
-            options = options ?? new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = DefaultMaxConcurrencyLevel
-            };
+            options = options ?? new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DefaultMaxConcurrencyLevel };
 
             _httpClient = httpClient ?? new HttpClient();
 
@@ -87,7 +85,7 @@ namespace Microsoft.AspNetCore.WebHooks
                 _launchers[0].Post(workItem);
             }
 
-            return Task.FromResult(true);
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -142,20 +140,15 @@ namespace Microsoft.AspNetCore.WebHooks
         /// is called enabling additional post-processing of a retry request.
         /// </summary>
         /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
-        protected virtual Task OnWebHookRetry(WebHookWorkItem workItem)
-        {
-            return Task.FromResult(true);
-        }
+        protected virtual Task OnWebHookRetry(WebHookWorkItem workItem) => Task.CompletedTask;
+
 
         /// <summary>
         /// If delivery of a WebHook is successful, i.e. a 2xx HTTP status code is received,
         /// then <see cref="OnWebHookSuccess"/> is called enabling additional post-processing.
         /// </summary>
         /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
-        protected virtual Task OnWebHookSuccess(WebHookWorkItem workItem)
-        {
-            return Task.FromResult(true);
-        }
+        protected virtual Task OnWebHookSuccess(WebHookWorkItem workItem) => Task.CompletedTask;
 
         /// <summary>
         /// If delivery of a WebHook is not successful, i.e. something other than a 2xx or 410 Gone
@@ -163,20 +156,15 @@ namespace Microsoft.AspNetCore.WebHooks
         /// then <see cref="OnWebHookFailure"/> is called enabling additional post-processing.
         /// </summary>
         /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
-        protected virtual Task OnWebHookFailure(WebHookWorkItem workItem)
-        {
-            return Task.FromResult(true);
-        }
+        protected virtual Task OnWebHookFailure(WebHookWorkItem workItem) => Task.CompletedTask;
 
         /// <summary>
         /// If delivery of a WebHook results in a 410 Gone HTTP status code, then <see cref="OnWebHookGone"/>
         /// is called enabling additional post-processing.
         /// </summary>
         /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
-        protected virtual Task OnWebHookGone(WebHookWorkItem workItem)
-        {
-            return Task.FromResult(true);
-        }
+        protected virtual Task OnWebHookGone(WebHookWorkItem workItem) => Task.CompletedTask;
+
 
         private async Task DelayedLaunchWebHook(WebHookWorkItem item, TimeSpan delay)
         {
@@ -191,8 +179,10 @@ namespace Microsoft.AspNetCore.WebHooks
         /// and if they see an exception they shut down.</remarks>
         private async Task LaunchWebHook(WebHookWorkItem workItem)
         {
+            var policy = _policyContainer.GetPolicyFor(workItem.WebHook);
             try
             {
+                policy.AcquireUse();
                 // Setting up and send WebHook request
                 var request = CreateWebHookRequest(workItem);
                 var response = await _httpClient.SendAsync(request);
@@ -202,6 +192,7 @@ namespace Microsoft.AspNetCore.WebHooks
 
                 if (response.IsSuccessStatusCode)
                 {
+                    policy.Success();
                     // If we get a successful response then we are done.
                     await OnWebHookSuccess(workItem);
                     return;
@@ -213,6 +204,12 @@ namespace Microsoft.AspNetCore.WebHooks
                     return;
                 }
             }
+            catch(CircuitBreakerException)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_GivingUp, workItem.WebHook.Id, workItem.Offset);
+                Logger.LogInformation(message);
+                await OnWebHookFailure(workItem);
+            }
             catch (Exception ex)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_WebHookFailure, workItem.Offset, workItem.WebHook.Id, ex.Message);
@@ -223,6 +220,7 @@ namespace Microsoft.AspNetCore.WebHooks
             {
                 // See if we should retry the request with delay or give up
                 workItem.Offset++;
+                policy.Failure();
                 if (workItem.Offset < _launchers.Length)
                 {
                     // If we are to retry then we submit the request again after a delay.

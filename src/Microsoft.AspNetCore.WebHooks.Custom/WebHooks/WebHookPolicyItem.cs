@@ -2,17 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Polly;
-using Polly.Timeout;
 
 namespace Microsoft.AspNetCore.WebHooks
 {
     public class WebHookPolicyItem
     {
-        private IAsyncPolicy _policy;
+        private static TimeSpan BACKOFF_TIME = TimeSpan.FromMinutes(30);
+        private const short BACKOFF_COUNT = 5;
+
+        private object padlock = new object();
+        private int failureCount = 0;
+
+        private DateTime? blockedSince;
 
         public WebHookPolicyItem(string id)
         {
@@ -20,37 +21,49 @@ namespace Microsoft.AspNetCore.WebHooks
 
             LastUsed = DateTime.UtcNow;
             LastSuccessful = DateTime.UtcNow;
-
-            _policy = CreatePolicy();
         }
 
         public string Id { get; }
         public DateTime LastUsed { get; private set; }
         public DateTime LastSuccessful { get; private set; }
 
-        public async Task ExecuteAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken)
+        public void AcquireUse()
         {
-            LastUsed = DateTime.UtcNow;
-            await _policy.ExecuteAsync(action, cancellationToken);
-            LastSuccessful = DateTime.UtcNow;
+            lock (padlock)
+            {
+                if (blockedSince.HasValue && DateTimeOffset.UtcNow - blockedSince < BACKOFF_TIME)
+                    throw new CircuitBreakerException("Circuitbreaker is open");
+
+                LastUsed = DateTime.Now;
+            }
         }
 
-        private static IAsyncPolicy CreatePolicy()
+        public void Success()
         {
-            //var timeout = Policy.TimeoutAsync(TimeSpan.FromSeconds(10), Polly.Timeout.TimeoutStrategy.Optimistic);
+            lock (padlock)
+            {
+                failureCount = 0;
+                blockedSince = null;
+                LastSuccessful = DateTime.Now;
+            }
+        }
 
-            var waitAndRetryPolicy = Policy
-               .Handle<HttpRequestException>()
-               .Or<TimeoutRejectedException>()
-               .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(1 * attempt));
-
-            var circuitBreakerPolicy = Policy
-               .Handle<Exception>(e => e is TimeoutRejectedException || e is HttpRequestException)
-               .CircuitBreakerAsync(
-                   exceptionsAllowedBeforeBreaking: 4,
-                   durationOfBreak: TimeSpan.FromSeconds(30)
-            );
-            return Policy.WrapAsync(waitAndRetryPolicy, circuitBreakerPolicy);//.WrapAsync(timeout);
+        public void Failure()
+        {
+            lock (padlock)
+            {
+                failureCount++;
+                if (failureCount > BACKOFF_COUNT)
+                    blockedSince = DateTime.UtcNow;
+            }
         }
     }
+
+    public class CircuitBreakerException : Exception
+    {
+        public CircuitBreakerException(string message) : base(message)
+        {
+        }
+    }
+
 }
