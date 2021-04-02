@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.WebHooks
         private static readonly Collection<TimeSpan> DefaultRetries = new Collection<TimeSpan> { TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(4) };
 
         private readonly HttpClient _httpClient;
+
+        private readonly BufferBlock<WebHookWorkItem> _buffer;
         private readonly ActionBlock<WebHookWorkItem>[] _launchers;
         private readonly IWebhookPolicyContainer _policyContainer;
         private bool _disposed;
@@ -61,12 +63,14 @@ namespace Microsoft.AspNetCore.WebHooks
             // Create the launch processors with the given retry delays
             _launchers = new ActionBlock<WebHookWorkItem>[1 + retryDelays.Count()];
 
+            _buffer = new BufferBlock<WebHookWorkItem>();
             var offset = 0;
             _launchers[offset++] = new ActionBlock<WebHookWorkItem>(async item => await LaunchWebHook(item), options);
             foreach (var delay in retryDelays)
             {
                 _launchers[offset++] = new ActionBlock<WebHookWorkItem>(async item => await DelayedLaunchWebHook(item, delay), options);
             }
+            _buffer.LinkTo(_launchers[0], new DataflowLinkOptions() { PropagateCompletion = true });
 
             var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_Started, typeof(DataflowWebHookSender).Name, _launchers.Length);
             Logger.LogInformation(message);
@@ -84,7 +88,7 @@ namespace Microsoft.AspNetCore.WebHooks
 
             foreach (var workItem in workItems)
             {
-                _launchers[0].Post(workItem);
+                _buffer.Post(workItem);
             }
 
             return Task.CompletedTask;
