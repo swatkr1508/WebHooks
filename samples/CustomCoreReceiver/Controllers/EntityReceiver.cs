@@ -14,7 +14,7 @@ namespace CustomCoreReceiver.Controllers
         }
 
         [PandoraWebHook()]
-        public IActionResult TextEntitiesChange(string id, JObject data)
+        public IActionResult TextEntitiesChange(JObject data)
         {
 
             return Ok();
