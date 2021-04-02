@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,7 +38,10 @@ namespace Microsoft.AspNetCore.WebHooks
 
         private readonly ILogger _logger;
         private readonly WebHookSettings _settings;
+        private readonly JsonSerializer _serializer;
         private bool _disposed;
+
+        private static MediaTypeHeaderValue ApplicationJson = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHookSender"/> class.
@@ -45,6 +50,9 @@ namespace Microsoft.AspNetCore.WebHooks
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _settings = settings.Value;
+
+            _serializer = _settings.Settings != null ? JsonSerializer.Create(_settings.Settings) : JsonSerializer.CreateDefault();
+            _serializer.Converters.Add(new NotificationDictionarySerializer());
         }
 
         /// <summary>
@@ -96,9 +104,11 @@ namespace Microsoft.AspNetCore.WebHooks
             // Create WebHook request
             var request = new HttpRequestMessage(HttpMethod.Post, hook.WebHookUri);
 
-            // Fill in request body based on WebHook and work item data
-            var body = CreateWebHookRequestBody(workItem);
-            SignWebHookRequest(workItem, request, body);
+            var ms = new MemoryStream();
+            var writer = new StreamWriter(ms);
+            CreateWebHookRequestBody(workItem, writer);
+            ms.Seek(0, SeekOrigin.Begin);
+            SignWebHookRequest(workItem, request, ms);
 
             // Add extra request or entity headers
             foreach (var kvp in hook.Headers)
@@ -121,7 +131,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// </summary>
         /// <param name="workItem">The <see cref="WebHookWorkItem"/> representing the data to be sent.</param>
         /// <returns>An initialized <see cref="JObject"/>.</returns>
-        protected virtual JObject CreateWebHookRequestBody(WebHookWorkItem workItem)
+        protected virtual void CreateWebHookRequestBody(WebHookWorkItem workItem, StreamWriter writer)
         {
             if (workItem == null)
             {
@@ -140,10 +150,7 @@ namespace Microsoft.AspNetCore.WebHooks
                 webhookBody.Properties = new Dictionary<string, object>(properties);
             }
             webhookBody.Notifications = workItem.Notifications.ToArray();
-
-            var serializer = _settings.Settings != null ? JsonSerializer.Create(_settings.Settings) : JsonSerializer.CreateDefault();
-            serializer.Converters.Add(new NotificationDictionarySerializer());
-            return JObject.FromObject(webhookBody, serializer);
+            _serializer.Serialize(writer, webhookBody);
         }
 
         /// <summary>
@@ -153,7 +160,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
         /// <param name="request">The request to add the signature to.</param>
         /// <param name="body">The body to sign and add to the request.</param>
-        protected virtual void SignWebHookRequest(WebHookWorkItem workItem, HttpRequestMessage request, JObject body)
+        protected virtual void SignWebHookRequest(WebHookWorkItem workItem, HttpRequestMessage request, Stream body)
         {
             if (workItem == null)
             {
@@ -174,16 +181,17 @@ namespace Microsoft.AspNetCore.WebHooks
             }
 
             var secret = Encoding.UTF8.GetBytes(workItem.WebHook.Secret);
-            using (var hasher = new HMACSHA256(secret))
-            {
-                var serializedBody = body.ToString();
-                request.Content = new StringContent(serializedBody, Encoding.UTF8, "application/json");
+            using var hasher = new HMACSHA256(secret);
 
-                var data = Encoding.UTF8.GetBytes(serializedBody);
-                var sha256 = hasher.ComputeHash(data);
-                var headerValue = string.Format(CultureInfo.InvariantCulture, SignatureHeaderValueTemplate, EncodingUtilities.ToHex(sha256));
-                request.Headers.Add(SignatureHeaderName, headerValue);
-            }
+            var sha256 = hasher.ComputeHash(body);
+            var headerValue = string.Format(CultureInfo.InvariantCulture, SignatureHeaderValueTemplate, EncodingUtilities.ToHex(sha256));
+            request.Headers.Add(SignatureHeaderName, headerValue);
+
+            body.Seek(0, SeekOrigin.Begin);
+
+            var content = new StreamContent(body);
+            content.Headers.ContentType = ApplicationJson;
+            request.Content = content;
         }
     }
 

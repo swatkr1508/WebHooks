@@ -80,6 +80,8 @@ namespace Microsoft.AspNetCore.WebHooks
                 throw new ArgumentNullException(nameof(workItems));
             }
 
+            Logger.LogDebug($"number of items in the launchers: {string.Join(", ", _launchers.Select(x => x.InputCount).ToArray())}");
+
             foreach (var workItem in workItems)
             {
                 _launchers[0].Post(workItem);
@@ -183,9 +185,10 @@ namespace Microsoft.AspNetCore.WebHooks
             try
             {
                 policy.AcquireUse();
+
                 // Setting up and send WebHook request
-                var request = CreateWebHookRequest(workItem);
-                var response = await _httpClient.SendAsync(request);
+                using var request = CreateWebHookRequest(workItem);
+                using var response = await _httpClient.SendAsync(request);
 
                 var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_Result, workItem.WebHook.Id, response.StatusCode, workItem.Offset);
                 Logger.LogInformation(message);
@@ -204,11 +207,12 @@ namespace Microsoft.AspNetCore.WebHooks
                     return;
                 }
             }
-            catch(CircuitBreakerException)
+            catch (CircuitBreakerException)
             {
                 var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_GivingUp, workItem.WebHook.Id, workItem.Offset);
                 Logger.LogInformation(message);
                 await OnWebHookFailure(workItem);
+                return;
             }
             catch (Exception ex)
             {
