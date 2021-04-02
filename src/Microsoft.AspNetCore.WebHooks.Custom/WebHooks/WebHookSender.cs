@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <param name="workItem">A <see cref="WebHookWorkItem"/> representing the <see cref="WebHook"/> to be sent.</param>
         /// <returns>A filled in <see cref="HttpRequestMessage"/>.</returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Request is disposed by caller.")]
-        protected virtual async Task<HttpRequestMessage> CreateWebHookRequest(WebHookWorkItem workItem)
+        protected virtual async Task<HttpRequestMessage> CreateWebHookRequestAsync(WebHookWorkItem workItem)
         {
             if (workItem == null)
             {
@@ -108,6 +108,7 @@ namespace Microsoft.AspNetCore.WebHooks
             var writer = new StreamWriter(ms);
             CreateWebHookRequestBody(workItem, writer);
             await writer.FlushAsync();
+
             ms.Seek(0, SeekOrigin.Begin);
             SignWebHookRequest(workItem, request, ms);
 
