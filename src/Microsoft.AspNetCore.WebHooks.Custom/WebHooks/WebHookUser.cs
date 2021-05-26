@@ -55,6 +55,10 @@ namespace Microsoft.AspNetCore.WebHooks
                 if (id == null)
                 {
                     id = GetClaim(principal, ClaimTypes.NameIdentifier);
+                    if (id == null)
+                    {
+                        id = GetClaim(principal, "client_id");
+                    }
                 }
             }
 
