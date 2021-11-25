@@ -11,18 +11,19 @@ jobs:
 - job: Linux
 ################################################################################
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   variables:
     BuildConfiguration: "Release"
-    Version: "2.3.$(Build.BuildId)"
+    Version: "6.0.$(Build.BuildId)"
+    DotNetSdkVersion: "6.0.100"
 
   steps:
 
   # Update .Net Core SDK
   - task: DotNetCoreInstaller@2
-    displayName: 'Use .NET Core sdk 5.0.100'
+    displayName: 'Use .NET Core sdk $(DotNetSdkVersion)'
     inputs:
-      version: 5.0.100
+      version: $(DotNetSdkVersion)
 
   # Dot Net Build
   - task: DotNetCoreCLI@2

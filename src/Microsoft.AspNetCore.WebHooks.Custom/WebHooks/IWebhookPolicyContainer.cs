@@ -3,12 +3,11 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.WebHooks
+namespace Microsoft.AspNetCore.WebHooks;
+
+public interface IWebhookPolicyContainer
 {
-    public interface IWebhookPolicyContainer
-    {
-        IEnumerable<WebHookPolicyItem> GetAllPolicies();
-        WebHookPolicyItem GetPolicyFor(WebHook webhook);
-        void RemovePolicyFor(WebHook webhook);
-    }
+    IEnumerable<WebHookPolicyItem> GetAllPolicies();
+    WebHookPolicyItem GetPolicyFor(WebHook webhook);
+    void RemovePolicyFor(WebHook webhook);
 }

@@ -4,18 +4,17 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.WebHooks
+namespace Microsoft.AspNetCore.WebHooks;
+
+/// <summary>
+/// Provides an abstraction for adding filters that can be used to determine when <see cref="WebHook"/> are triggered.
+/// </summary>
+public interface IWebHookFilterProvider
 {
     /// <summary>
-    /// Provides an abstraction for adding filters that can be used to determine when <see cref="WebHook"/> are triggered.
+    /// Get the filters for this <see cref="IWebHookFilterProvider"/> implementation so that they be applied to <see cref="WebHook"/>
+    /// instances.
     /// </summary>
-    public interface IWebHookFilterProvider
-    {
-        /// <summary>
-        /// Get the filters for this <see cref="IWebHookFilterProvider"/> implementation so that they be applied to <see cref="WebHook"/>
-        /// instances.
-        /// </summary>
-        /// <returns>A collection of <see cref="WebHookFilter"/> instances.</returns>
-        Task<Collection<WebHookFilter>> GetFiltersAsync();
-    }
+    /// <returns>A collection of <see cref="WebHookFilter"/> instances.</returns>
+    Task<Collection<WebHookFilter>> GetFiltersAsync();
 }

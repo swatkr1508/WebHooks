@@ -2,100 +2,98 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.WebHooks.Properties;
 using Microsoft.AspNetCore.WebHooks.Receivers.Properties;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.AspNetCore.WebHooks.Metadata
+namespace Microsoft.AspNetCore.WebHooks.Metadata;
+
+/// <summary>
+/// Base class for <see cref="IWebHookMetadata"/> services.
+/// </summary>
+public abstract class WebHookMetadata : IWebHookBodyTypeMetadataService
 {
     /// <summary>
-    /// Base class for <see cref="IWebHookMetadata"/> services.
+    /// Instantiates a new <see cref="WebHookMetadata"/> instance with the given <paramref name="receiverName"/>.
     /// </summary>
-    public abstract class WebHookMetadata : IWebHookBodyTypeMetadataService
+    /// <param name="receiverName">The name of an available <see cref="IWebHookReceiver"/>.</param>
+    protected WebHookMetadata(string receiverName)
     {
-        /// <summary>
-        /// Instantiates a new <see cref="WebHookMetadata"/> instance with the given <paramref name="receiverName"/>.
-        /// </summary>
-        /// <param name="receiverName">The name of an available <see cref="IWebHookReceiver"/>.</param>
-        protected WebHookMetadata(string receiverName)
+        if (string.IsNullOrEmpty(receiverName))
         {
-            if (string.IsNullOrEmpty(receiverName))
-            {
-                throw new ArgumentException(Resources.General_ArgumentCannotBeNullOrEmpty, nameof(receiverName));
-            }
-
-            ReceiverName = receiverName;
+            throw new ArgumentException(Resources.General_ArgumentCannotBeNullOrEmpty, nameof(receiverName));
         }
 
-        /// <inheritdoc />
-        public abstract WebHookBodyType BodyType { get; }
+        ReceiverName = receiverName;
+    }
 
-        /// <inheritdoc />
-        public string ReceiverName { get; }
+    /// <inheritdoc />
+    public abstract WebHookBodyType BodyType { get; }
 
-        /// <inheritdoc />
-        bool IWebHookReceiver.IsApplicable(string receiverName)
+    /// <inheritdoc />
+    public string ReceiverName { get; }
+
+    /// <inheritdoc />
+    bool IWebHookReceiver.IsApplicable(string receiverName)
+    {
+        if (receiverName == null)
         {
-            if (receiverName == null)
-            {
-                throw new ArgumentNullException(nameof(receiverName));
-            }
-
-            if (ReceiverName == null)
-            {
-                return true;
-            }
-
-            return string.Equals(ReceiverName, receiverName, StringComparison.OrdinalIgnoreCase);
+            throw new ArgumentNullException(nameof(receiverName));
         }
 
-        /// <summary>
-        /// Register <typeparamref name="TService"/> as all metadata interfaces it implements (always including
-        /// <see cref="IWebHookBodyTypeMetadataService"/>) in <paramref name="services"/>.
-        /// </summary>
-        /// <typeparam name="TService">The <see cref="IWebHookMetadata"/> type to register.</typeparam>
-        /// <param name="services">The <see cref="IServiceCollection"/> to update.</param>
-        public static void Register<TService>(IServiceCollection services)
-            where TService : class, IWebHookBodyTypeMetadataService
+        if (ReceiverName == null)
         {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IWebHookBodyTypeMetadataService, TService>());
+            return true;
+        }
 
-            var type = typeof(TService);
-            if (typeof(IWebHookBindingMetadata).IsAssignableFrom(type))
-            {
-                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookBindingMetadata), type));
-            }
+        return string.Equals(ReceiverName, receiverName, StringComparison.OrdinalIgnoreCase);
+    }
 
-            if (typeof(IWebHookEventFromBodyMetadata).IsAssignableFrom(type))
-            {
-                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookEventFromBodyMetadata), type));
-            }
+    /// <summary>
+    /// Register <typeparamref name="TService"/> as all metadata interfaces it implements (always including
+    /// <see cref="IWebHookBodyTypeMetadataService"/>) in <paramref name="services"/>.
+    /// </summary>
+    /// <typeparam name="TService">The <see cref="IWebHookMetadata"/> type to register.</typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to update.</param>
+    public static void Register<TService>(IServiceCollection services)
+        where TService : class, IWebHookBodyTypeMetadataService
+    {
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IWebHookBodyTypeMetadataService, TService>());
 
-            if (typeof(IWebHookEventMetadata).IsAssignableFrom(type))
-            {
-                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookEventMetadata), type));
-            }
+        var type = typeof(TService);
+        if (typeof(IWebHookBindingMetadata).IsAssignableFrom(type))
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookBindingMetadata), type));
+        }
 
-            if (typeof(IWebHookFilterMetadata).IsAssignableFrom(type))
-            {
-                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookFilterMetadata), type));
-            }
+        if (typeof(IWebHookEventFromBodyMetadata).IsAssignableFrom(type))
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookEventFromBodyMetadata), type));
+        }
 
-            if (typeof(IWebHookGetHeadRequestMetadata).IsAssignableFrom(type))
-            {
-                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookGetHeadRequestMetadata), type));
-            }
+        if (typeof(IWebHookEventMetadata).IsAssignableFrom(type))
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookEventMetadata), type));
+        }
 
-            if (typeof(IWebHookPingRequestMetadata).IsAssignableFrom(type))
-            {
-                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookPingRequestMetadata), type));
-            }
+        if (typeof(IWebHookFilterMetadata).IsAssignableFrom(type))
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookFilterMetadata), type));
+        }
 
-            if (typeof(IWebHookVerifyCodeMetadata).IsAssignableFrom(type))
-            {
-                services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookVerifyCodeMetadata), type));
-            }
+        if (typeof(IWebHookGetHeadRequestMetadata).IsAssignableFrom(type))
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookGetHeadRequestMetadata), type));
+        }
+
+        if (typeof(IWebHookPingRequestMetadata).IsAssignableFrom(type))
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookPingRequestMetadata), type));
+        }
+
+        if (typeof(IWebHookVerifyCodeMetadata).IsAssignableFrom(type))
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IWebHookVerifyCodeMetadata), type));
         }
     }
 }

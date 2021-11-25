@@ -7,75 +7,74 @@ using System.Xml.XPath;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNetCore.WebHooks.Utilities
+namespace Microsoft.AspNetCore.WebHooks.Utilities;
+
+/// <summary>
+/// Utility methods for extracting <see cref="StringValues"/> from objects using JSON paths and XPaths.
+/// </summary>
+public static class ObjectPathUtilities
 {
     /// <summary>
-    /// Utility methods for extracting <see cref="StringValues"/> from objects using JSON paths and XPaths.
+    /// Gets the <see cref="StringValues"/> that match <paramref name="jsonPath"/> in the <paramref name="json"/>.
     /// </summary>
-    public static class ObjectPathUtilities
+    /// <param name="json">The <see cref="JContainer"/> to search.</param>
+    /// <param name="jsonPath">The JSON path to match.</param>
+    /// <returns>
+    /// The <see cref="StringValues"/> that match <paramref name="jsonPath"/> in the <paramref name="json"/>.
+    /// </returns>
+    public static StringValues GetStringValues(JContainer json, string jsonPath)
     {
-        /// <summary>
-        /// Gets the <see cref="StringValues"/> that match <paramref name="jsonPath"/> in the <paramref name="json"/>.
-        /// </summary>
-        /// <param name="json">The <see cref="JContainer"/> to search.</param>
-        /// <param name="jsonPath">The JSON path to match.</param>
-        /// <returns>
-        /// The <see cref="StringValues"/> that match <paramref name="jsonPath"/> in the <paramref name="json"/>.
-        /// </returns>
-        public static StringValues GetStringValues(JContainer json, string jsonPath)
+        var tokens = json.SelectTokens(jsonPath);
+        var count = tokens.Count();
+        switch (count)
         {
-            var tokens = json.SelectTokens(jsonPath);
-            var count = tokens.Count();
-            switch (count)
-            {
-                case 0:
-                    return StringValues.Empty;
+            case 0:
+                return StringValues.Empty;
 
-                case 1:
-                    return new StringValues((string)tokens.First());
+            case 1:
+                return new StringValues((string)tokens.First());
 
-                default:
-                    var eventArray = new string[count];
-                    var i = 0;
-                    foreach (var token in tokens)
-                    {
-                        eventArray[i++] = (string)token;
-                    }
+            default:
+                var eventArray = new string[count];
+                var i = 0;
+                foreach (var token in tokens)
+                {
+                    eventArray[i++] = (string)token;
+                }
 
-                    return new StringValues(eventArray);
-            }
+                return new StringValues(eventArray);
         }
+    }
 
-        /// <summary>
-        /// Gets the <see cref="StringValues"/> that match <paramref name="xPath"/> in the <paramref name="xml"/>.
-        /// </summary>
-        /// <param name="xml">The <see cref="XElement"/> to search.</param>
-        /// <param name="xPath">The XPath to match.</param>
-        /// <returns>
-        /// The <see cref="StringValues"/> that match <paramref name="xPath"/> in the <paramref name="xml"/>.
-        /// </returns>
-        public static StringValues GetStringValues(XElement xml, string xPath)
+    /// <summary>
+    /// Gets the <see cref="StringValues"/> that match <paramref name="xPath"/> in the <paramref name="xml"/>.
+    /// </summary>
+    /// <param name="xml">The <see cref="XElement"/> to search.</param>
+    /// <param name="xPath">The XPath to match.</param>
+    /// <returns>
+    /// The <see cref="StringValues"/> that match <paramref name="xPath"/> in the <paramref name="xml"/>.
+    /// </returns>
+    public static StringValues GetStringValues(XElement xml, string xPath)
+    {
+        var elements = xml.XPathSelectElements(xPath);
+        var count = elements.Count();
+        switch (count)
         {
-            var elements = xml.XPathSelectElements(xPath);
-            var count = elements.Count();
-            switch (count)
-            {
-                case 0:
-                    return StringValues.Empty;
+            case 0:
+                return StringValues.Empty;
 
-                case 1:
-                    return new StringValues(elements.First().Value);
+            case 1:
+                return new StringValues(elements.First().Value);
 
-                default:
-                    var eventArray = new string[count];
-                    var i = 0;
-                    foreach (var element in elements)
-                    {
-                        eventArray[i++] = element.Value;
-                    }
+            default:
+                var eventArray = new string[count];
+                var i = 0;
+                foreach (var element in elements)
+                {
+                    eventArray[i++] = element.Value;
+                }
 
-                    return new StringValues(eventArray);
-            }
+                return new StringValues(eventArray);
         }
     }
 }

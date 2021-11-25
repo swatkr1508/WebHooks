@@ -5,21 +5,20 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.WebHooks
+namespace Microsoft.AspNetCore.WebHooks;
+
+public class WebhookPolicyContainer : IWebhookPolicyContainer
 {
-    public class WebhookPolicyContainer : IWebhookPolicyContainer
+    private readonly ConcurrentDictionary<string, WebHookPolicyItem> _policies;
+
+    public WebhookPolicyContainer()
     {
-        private readonly ConcurrentDictionary<string, WebHookPolicyItem> _policies;
-
-        public WebhookPolicyContainer()
-        {
-            _policies = new ConcurrentDictionary<string, WebHookPolicyItem>();
-        }
-
-        public IEnumerable<WebHookPolicyItem> GetAllPolicies() => _policies.Values.ToList();
-
-        public WebHookPolicyItem GetPolicyFor(WebHook webhook) => _policies.GetOrAdd(webhook.Id, (arg) => new WebHookPolicyItem(arg));
-
-        public void RemovePolicyFor(WebHook webhook) => _policies.TryRemove(webhook.Id, out _);
+        _policies = new ConcurrentDictionary<string, WebHookPolicyItem>();
     }
+
+    public IEnumerable<WebHookPolicyItem> GetAllPolicies() => _policies.Values.ToList();
+
+    public WebHookPolicyItem GetPolicyFor(WebHook webhook) => _policies.GetOrAdd(webhook.Id, (arg) => new WebHookPolicyItem(arg));
+
+    public void RemovePolicyFor(WebHook webhook) => _policies.TryRemove(webhook.Id, out _);
 }

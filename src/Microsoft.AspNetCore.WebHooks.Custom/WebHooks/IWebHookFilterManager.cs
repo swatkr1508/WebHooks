@@ -4,18 +4,17 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.WebHooks
+namespace Microsoft.AspNetCore.WebHooks;
+
+/// <summary>
+/// Provides an abstraction for managing all registered <see cref="IWebHookFilterProvider"/> instances.
+/// </summary>
+public interface IWebHookFilterManager
 {
     /// <summary>
-    /// Provides an abstraction for managing all registered <see cref="IWebHookFilterProvider"/> instances.
+    /// Gets a <see cref="Dictionary{TKey,TValue}"/> of all registered <see cref="WebHookFilter"/> instances 
+    /// provided by registered <see cref="IWebHookFilterProvider"/> instances.
     /// </summary>
-    public interface IWebHookFilterManager
-    {
-        /// <summary>
-        /// Gets a <see cref="Dictionary{TKey,TValue}"/> of all registered <see cref="WebHookFilter"/> instances 
-        /// provided by registered <see cref="IWebHookFilterProvider"/> instances.
-        /// </summary>
-        /// <returns>An <see cref="IDictionary{TKey, TValue}"/> of <see cref="WebHookFilter"/> instances keyed by name.</returns>
-        Task<IDictionary<string, WebHookFilter>> GetAllWebHookFiltersAsync();
-    }
+    /// <returns>An <see cref="IDictionary{TKey, TValue}"/> of <see cref="WebHookFilter"/> instances keyed by name.</returns>
+    Task<IDictionary<string, WebHookFilter>> GetAllWebHookFiltersAsync();
 }

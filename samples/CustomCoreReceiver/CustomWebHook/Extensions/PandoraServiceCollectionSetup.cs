@@ -4,18 +4,17 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using P112.WebHooks.Filters;
 using P112.WebHooks.Metadata;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+internal static class PandoraServiceCollectionSetup
 {
-    internal static class PandoraServiceCollectionSetup
+    public static void AddPandoraServices(IServiceCollection services)
     {
-        public static void AddPandoraServices(IServiceCollection services)
+        if (services == null)
         {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-            WebHookMetadata.Register<PandoraMetadata>(services);
-            services.TryAddSingleton<PandoraVerifySignatureFilter>();
+            throw new ArgumentNullException(nameof(services));
         }
+        WebHookMetadata.Register<PandoraMetadata>(services);
+        services.TryAddSingleton<PandoraVerifySignatureFilter>();
     }
 }

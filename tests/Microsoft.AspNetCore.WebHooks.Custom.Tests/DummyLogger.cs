@@ -3,22 +3,21 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.WebHooks.Custom.Tests
+namespace Microsoft.AspNetCore.WebHooks.Custom.Tests;
+
+internal class DummyLogger<T> : ILogger<T>
 {
-    internal class DummyLogger<T> : ILogger<T>
+    public IDisposable BeginScope<TState>(TState state)
     {
-        public IDisposable BeginScope<TState>(TState state)
-        {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
+    }
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            throw new NotImplementedException();
-        }
+    public bool IsEnabled(LogLevel logLevel)
+    {
+        throw new NotImplementedException();
+    }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-        {
-        }
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+    {
     }
 }

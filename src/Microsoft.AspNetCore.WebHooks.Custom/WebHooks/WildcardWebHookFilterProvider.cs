@@ -4,34 +4,32 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebHooks.Custom.Properties;
-using Microsoft.AspNetCore.WebHooks.Properties;
 
-namespace Microsoft.AspNetCore.WebHooks
+namespace Microsoft.AspNetCore.WebHooks;
+
+/// <summary>
+/// Defines a default wildcard <see cref="WebHookFilter"/> which matches all filters.
+/// </summary>
+public class WildcardWebHookFilterProvider : IWebHookFilterProvider
 {
-    /// <summary>
-    /// Defines a default wildcard <see cref="WebHookFilter"/> which matches all filters.
-    /// </summary>
-    public class WildcardWebHookFilterProvider : IWebHookFilterProvider
-    {
-        private const string WildcardName = "*";
+    private const string WildcardName = "*";
 
-        private static readonly Collection<WebHookFilter> Filters = new Collection<WebHookFilter>
+    private static readonly Collection<WebHookFilter> Filters = new Collection<WebHookFilter>
         {
             new WebHookFilter { Name = WildcardName, Description = CustomResources.Filter_WildcardDescription },
         };
 
-        /// <summary>
-        /// Gets the name of the <see cref="WebHookFilter"/> registered by this <see cref="IWebHookFilterProvider"/>.
-        /// </summary>
-        public static string Name
-        {
-            get { return WildcardName; }
-        }
+    /// <summary>
+    /// Gets the name of the <see cref="WebHookFilter"/> registered by this <see cref="IWebHookFilterProvider"/>.
+    /// </summary>
+    public static string Name
+    {
+        get { return WildcardName; }
+    }
 
-        /// <inheritdoc />
-        public Task<Collection<WebHookFilter>> GetFiltersAsync()
-        {
-            return Task.FromResult(Filters);
-        }
+    /// <inheritdoc />
+    public Task<Collection<WebHookFilter>> GetFiltersAsync()
+    {
+        return Task.FromResult(Filters);
     }
 }

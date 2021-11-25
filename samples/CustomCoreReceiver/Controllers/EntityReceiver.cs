@@ -2,22 +2,21 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using P112.WebHooks.Pandora;
 
-namespace CustomCoreReceiver.Controllers
+namespace CustomCoreReceiver.Controllers;
+
+public class EntityReceiver : ControllerBase
 {
-    public class EntityReceiver : ControllerBase
+    [PandoraWebHook(Id = "event2")]
+    public IActionResult Event2Fired(JObject data)
     {
-        [PandoraWebHook(Id = "event2")]
-        public IActionResult Event2Fired(JObject data)
-        {
 
-            return Ok();
-        }
+        return Ok();
+    }
 
-        [PandoraWebHook()]
-        public IActionResult TextEntitiesChange(string id, JObject data)
-        {
+    [PandoraWebHook()]
+    public IActionResult TextEntitiesChange(string id, JObject data)
+    {
 
-            return Ok();
-        }
+        return Ok();
     }
 }

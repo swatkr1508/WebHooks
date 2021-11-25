@@ -1,6 +1,5 @@
-﻿namespace Microsoft.AspNetCore.WebHooks.Extensions
+﻿namespace Microsoft.AspNetCore.WebHooks.Extensions;
+
+class IApplicationBuilderExtensions
 {
-    class IApplicationBuilderExtensions
-    {
-    }
 }

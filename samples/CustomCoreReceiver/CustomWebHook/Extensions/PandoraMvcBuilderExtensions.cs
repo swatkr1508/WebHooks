@@ -4,28 +4,27 @@
 using System;
 using System.ComponentModel;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection;
+
+/// <summary>
+/// Extension methods for setting up Slack WebHooks in an <see cref="IMvcBuilder" />.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class PandoraMvcBuilderExtensions
 {
     /// <summary>
-    /// Extension methods for setting up Slack WebHooks in an <see cref="IMvcBuilder" />.
+    /// Add Slack WebHook configuration and services to the specified <paramref name="builder"/>.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static class PandoraMvcBuilderExtensions
+    /// <param name="builder">The <see cref="IMvcBuilder" /> to configure.</param>
+    /// <returns>The <paramref name="builder"/>.</returns>
+    public static IMvcBuilder AddPandoraWebHooks(this IMvcBuilder builder)
     {
-        /// <summary>
-        /// Add Slack WebHook configuration and services to the specified <paramref name="builder"/>.
-        /// </summary>
-        /// <param name="builder">The <see cref="IMvcBuilder" /> to configure.</param>
-        /// <returns>The <paramref name="builder"/>.</returns>
-        public static IMvcBuilder AddPandoraWebHooks(this IMvcBuilder builder)
+        if (builder == null)
         {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            PandoraServiceCollectionSetup.AddPandoraServices(builder.Services);
-            return builder.AddWebHooks();
+            throw new ArgumentNullException(nameof(builder));
         }
+
+        PandoraServiceCollectionSetup.AddPandoraServices(builder.Services);
+        return builder.AddWebHooks();
     }
 }

@@ -1,18 +1,23 @@
-using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-namespace CustomCoreReceiver
-{
-    public class Program
+var builder = WebApplication.CreateBuilder(args);
+builder.Services
+    .AddControllers()
+    .AddPandoraWebHooks();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+    app.UseDeveloperExceptionPage();
+
+app
+    .UseRouting()
+    .UseEndpoints(endpoints =>
     {
-        public static void Main(string[] args)
-        {
-            BuildWebHost(args).Run();
-        }
+        endpoints.MapControllers();
+    });
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .Build();
-    }
-}
+app.Run();
