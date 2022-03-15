@@ -6,7 +6,7 @@ namespace CustomCoreReceiver.Controllers
 {
     public class EntityReceiver : ControllerBase
     {
-        [PandoraWebHook(Id = "event2")]
+        [PandoraWebHook(Id = "Job")]
         public IActionResult Event2Fired(JObject data)
         {
 

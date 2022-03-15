@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.WebHooks
     [Serializable]
     public class NotificationDictionary : Dictionary<string, object>
     {
-        internal const string ActionKey = "Action";
+        internal const string ActionKey = "EventType";
 
         /// <summary>
         /// Initializes a new empty <see cref="NotificationDictionary"/>.
