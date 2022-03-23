@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.WebHooks
     {
         internal const string SignatureHeaderKey = "sha256";
         internal const string SignatureHeaderValueTemplate = SignatureHeaderKey + "={0}";
-        internal const string SignatureHeaderName = "ms-signature";
+        internal const string SignatureHeaderName = "X-ISaas-Signature";
 
         private const string BodyIdKey = "Id";
         private const string BodyAttemptKey = "Attempt";
@@ -129,6 +129,44 @@ namespace Microsoft.AspNetCore.WebHooks
         }
 
         /// <summary>
+        /// Creates an <see cref="HttpRequestMessage"/> containing the headers and body given a <paramref name="workItem"/>.
+        /// </summary>
+        /// <param name="workItem">A <see cref="WebHookWorkItem"/> representing the <see cref="WebHook"/> to be sent.</param>
+        /// <returns>A filled in <see cref="HttpRequestMessage"/>.</returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Request is disposed by caller.")]
+        protected virtual HttpRequestMessage CreateWebHookRequest(WebHookWorkItem workItem)
+        {
+            if (workItem == null)
+            {
+                throw new ArgumentNullException(nameof(workItem));
+            }
+
+            var hook = workItem.WebHook;
+
+            // Create WebHook request
+            var request = new HttpRequestMessage(HttpMethod.Post, hook.WebHookUri);
+
+            // Fill in request body based on WebHook and work item data
+            var body = CreateWebHookRequestBody(workItem);
+            SignWebHookRequest(workItem, request, body);
+
+            // Add extra request or entity headers
+            foreach (var kvp in hook.Headers)
+            {
+                if (!request.Headers.TryAddWithoutValidation(kvp.Key, kvp.Value))
+                {
+                    if (!request.Content.Headers.TryAddWithoutValidation(kvp.Key, kvp.Value))
+                    {
+                        var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Manager_InvalidHeader, kvp.Key, hook.Id);
+                        _logger.LogError(message);
+                    }
+                }
+            }
+
+            return request;
+        }
+
+        /// <summary>
         /// Creates a <see cref="JObject"/> used as the <see cref="HttpRequestMessage"/> entity body for a <see cref="WebHook"/>.
         /// </summary>
         /// <param name="workItem">The <see cref="WebHookWorkItem"/> representing the data to be sent.</param>
@@ -146,13 +184,42 @@ namespace Microsoft.AspNetCore.WebHooks
                 Id = workItem.Id,
                 Attempt = workItem.Offset + 1,
             };
+
+            webhookBody.Notifications = workItem.Notifications.ToArray();
+            //_serializer.Serialize(writer, webhookBody);
+            JsonSerializer.CreateDefault().Serialize(writer, webhookBody);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="JObject"/> used as the <see cref="HttpRequestMessage"/> entity body for a <see cref="WebHook"/>.
+        /// </summary>
+        /// <param name="workItem">The <see cref="WebHookWorkItem"/> representing the data to be sent.</param>
+        /// <returns>An initialized <see cref="JObject"/>.</returns>
+        protected virtual JObject CreateWebHookRequestBody(WebHookWorkItem workItem)
+        {
+            if (workItem == null)
+            {
+                throw new ArgumentNullException(nameof(workItem));
+            }
+
+            var body = new Dictionary<string, object>
+            {
+                // Set properties from work item
+                [BodyIdKey] = workItem.Id,
+                [BodyAttemptKey] = workItem.Offset + 1
+            };
+
+            // Set properties from WebHook
             var properties = workItem.WebHook.Properties;
             if (properties != null)
             {
-                webhookBody.Properties = new Dictionary<string, object>(properties);
+                body[BodyPropertiesKey] = new Dictionary<string, object>(properties);
             }
-            webhookBody.Notifications = workItem.Notifications.ToArray();
-            _serializer.Serialize(writer, webhookBody);
+
+            // Set notifications
+            body[BodyNotificationsKey] = workItem.Notifications;
+
+            return JObject.FromObject(body);
         }
 
         /// <summary>
@@ -194,8 +261,62 @@ namespace Microsoft.AspNetCore.WebHooks
             var content = new StreamContent(body);
             content.Headers.ContentType = ApplicationJson;
             request.Content = content;
+
+            /* var secret = Encoding.UTF8.GetBytes(workItem.WebHook.Secret);
+             using (var hasher = new HMACSHA256(secret))
+             {
+                 var serializedBody = body.ToString();
+                 request.Content = new StringContent(serializedBody, Encoding.UTF8, "application/json");
+
+                 var data = Encoding.UTF8.GetBytes(serializedBody);
+                 var sha256 = hasher.ComputeHash(data);
+                 var headerValue = string.Format(CultureInfo.InvariantCulture, SignatureHeaderValueTemplate, EncodingUtilities.ToHex(sha256));
+                 request.Headers.Add(SignatureHeaderName, headerValue);
+             }
+            */
+        }
+
+        /// <summary>
+        /// Adds a SHA 256 signature to the <paramref name="body"/> and adds it to the <paramref name="request"/> as an
+        /// HTTP header to the <see cref="HttpRequestMessage"/> along with the entity body.
+        /// </summary>
+        /// <param name="workItem">The current <see cref="WebHookWorkItem"/>.</param>
+        /// <param name="request">The request to add the signature to.</param>
+        /// <param name="body">The body to sign and add to the request.</param>
+        protected virtual void SignWebHookRequest(WebHookWorkItem workItem, HttpRequestMessage request, JObject body)
+        {
+            if (workItem == null)
+            {
+                throw new ArgumentNullException(nameof(workItem));
+            }
+            if (workItem.WebHook == null)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, CustomResources.Sender_BadWorkItem, this.GetType().Name, "WebHook");
+                throw new ArgumentException(message, "workItem");
+            }
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+            if (body == null)
+            {
+                throw new ArgumentNullException(nameof(body));
+            }
+
+            var secret = Encoding.UTF8.GetBytes(workItem.WebHook.Secret);
+            using (var hasher = new HMACSHA256(secret))
+            {
+                var serializedBody = body.ToString();
+                request.Content = new StringContent(serializedBody, Encoding.UTF8, "application/json");
+
+                var data = Encoding.UTF8.GetBytes(serializedBody);
+                var sha256 = hasher.ComputeHash(data);
+                var headerValue = string.Format(CultureInfo.InvariantCulture, SignatureHeaderValueTemplate, EncodingUtilities.ToHex(sha256));
+                request.Headers.Add(SignatureHeaderName, headerValue);
+            }
         }
     }
+
 
     internal class NotificationDictionarySerializer : JsonConverter
     {
@@ -228,7 +349,6 @@ namespace Microsoft.AspNetCore.WebHooks
     {
         public string Id { get; set; }
         public int Attempt { get; set; }
-        public Dictionary<string, object> Properties { get; set; }
         public NotificationDictionary[] Notifications { get; set; }
     }
 }

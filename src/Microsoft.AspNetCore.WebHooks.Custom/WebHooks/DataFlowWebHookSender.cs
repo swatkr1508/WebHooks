@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.WebHooks
         private const int DefaultMaxConcurrencyLevel = 8;
 
         private static readonly Collection<TimeSpan> DefaultRetries = new Collection<TimeSpan> { TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(4) };
-
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;
 
         private readonly BufferBlock<WebHookWorkItem> _buffer;
@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.WebHooks
         /// </summary>
         /// <param name="logger">The current <see cref="ILogger"/>.</param>
         /// <param name="settings">The current <see cref="WebHookSettings"/>.</param>
-        public DataflowWebHookSender(IWebhookPolicyContainer policyContainer, ILogger<DataflowWebHookSender> logger, IOptions<WebHookSettings> settings)
-            : this(policyContainer, logger, retryDelays: null, options: null, httpClient: null, settings: settings)
+        public DataflowWebHookSender(IWebhookPolicyContainer policyContainer, ILogger<DataflowWebHookSender> logger, IOptions<WebHookSettings> settings, IHttpClientFactory httpClientFactory)
+            : this(policyContainer, logger, retryDelays: null, options: null, httpClientFactory, settings: settings)
         {
         }
 
@@ -50,15 +50,15 @@ namespace Microsoft.AspNetCore.WebHooks
         /// Initialize a new instance of the <see cref="DataflowWebHookSender"/> with the given retry policy, <paramref name="options"/>,
         /// and <paramref name="httpClient"/>. This constructor is intended for unit testing purposes.
         /// </summary>
-        internal DataflowWebHookSender(IWebhookPolicyContainer policyContainer, ILogger<DataflowWebHookSender> logger, IEnumerable<TimeSpan> retryDelays, ExecutionDataflowBlockOptions options, HttpClient httpClient, IOptions<WebHookSettings> settings)
+        internal DataflowWebHookSender(IWebhookPolicyContainer policyContainer, ILogger<DataflowWebHookSender> logger, IEnumerable<TimeSpan> retryDelays, ExecutionDataflowBlockOptions options, IHttpClientFactory httpClientFactory, IOptions<WebHookSettings> settings)
             : base(logger, settings)
         {
             _policyContainer = policyContainer ?? throw new ArgumentNullException(nameof(policyContainer));
             retryDelays = retryDelays ?? DefaultRetries;
 
             options = options ?? new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = DefaultMaxConcurrencyLevel };
-
-            _httpClient = httpClient ?? new HttpClient();
+            _httpClientFactory = httpClientFactory;
+            _httpClient = _httpClientFactory.CreateClient("webhook");
 
             // Create the launch processors with the given retry delays
             _launchers = new ActionBlock<WebHookWorkItem>[1 + retryDelays.Count()];
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.WebHooks
             _launchers[offset++] = new ActionBlock<WebHookWorkItem>(async item => await LaunchWebHook(item), options);
             foreach (var delay in retryDelays)
             {
-                _launchers[offset++] = new ActionBlock<WebHookWorkItem>(async item => await DelayedLaunchWebHook(item, delay), options);
+                _launchers[offset++] = new ActionBlock<WebHookWorkItem>(async item => await  DelayedLaunchWebHook(item, delay), options);
             }
             _buffer.LinkTo(_launchers[0], new DataflowLinkOptions() { PropagateCompletion = true });
 

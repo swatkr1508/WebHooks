@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.WebHooks
     public class WebHookWorkItem
     {
         private string _id;
-        private IDictionary<string, object> _properties;
+        private string _properties;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WebHookWorkItem"/> with the given <paramref name="notifications"/>.
@@ -69,15 +69,19 @@ namespace Microsoft.AspNetCore.WebHooks
         /// <summary>
         /// Gets the set of additional properties associated with this <see cref="WebHookWorkItem"/> instance.
         /// </summary>
-        public IDictionary<string, object> Properties
+        public string Properties
         {
             get
             {
                 if (_properties == null)
                 {
-                    _properties = new Dictionary<string, object>();
+                    _properties = "";
                 }
                 return _properties;
+            }
+            set
+            {
+                _properties = value;
             }
         }
     }
